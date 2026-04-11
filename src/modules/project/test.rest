@@ -1,0 +1,54 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@branchId = branch-uuid-here
+@projectId = project-uuid-here
+@memberId = member-uuid-here
+
+### Create a new project
+POST {{baseUrl}}/churches/{{churchId}}/projects
+Content-Type: application/json
+
+{
+  "title": "New Sanctuary Construction",
+  "description": "Building a larger hall for the congregation",
+  "targetAmount": 500000.0,
+  "branchId": "{{branchId}}",
+  "startDate": "2026-05-01T00:00:00Z"
+}
+
+### List projects
+GET {{baseUrl}}/churches/{{churchId}}/projects
+
+### List projects of a branch
+GET {{baseUrl}}/churches/{{churchId}}/branches/{{branchId}}/projects
+
+### Create project item
+POST {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/items
+Content-Type: application/json
+
+{
+  "name": "Roofing",
+  "description": "Modern roofing for the sanctuary",
+  "targetAmount": 50000.0
+}
+
+### List project items
+GET {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/items
+
+### List project members
+GET {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/members
+
+### Add a member to a project
+POST {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/members
+Content-Type: application/json
+
+{
+  "memberId": "{{memberId}}"
+}
+
+### Remove a member from a project
+DELETE {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/members/{{memberId}}
+
+### Get project progress
+GET {{baseUrl}}/churches/{{churchId}}/projects/{{projectId}}/progress

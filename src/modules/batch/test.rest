@@ -1,0 +1,48 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@batchId = batch-uuid-here
+
+### Create a new batch
+POST {{baseUrl}}/churches/{{churchId}}/batches
+Content-Type: application/json
+
+{
+  "name": "Sunday Service - Apr 5, 2026",
+  "description": "Offering from main sanctuary"
+}
+
+### Batches overview (summary + rows; Gracely-style tabs)
+GET {{baseUrl}}/churches/{{churchId}}/batches?filter=all&search=&limit=50&offset=0
+
+### Open batches only (not archived, status open)
+GET {{baseUrl}}/churches/{{churchId}}/batches?filter=open
+
+### Archived batches
+GET {{baseUrl}}/churches/{{churchId}}/batches?filter=archived
+
+### Deposit batch (credit asset account, then close + archive)
+POST {{baseUrl}}/churches/{{churchId}}/batches/{{batchId}}/deposit
+Content-Type: application/json
+
+{
+  "accountId": "financial-account-uuid-here"
+}
+
+### Archive batch only (no ledger; matches Gracely row “Archive”)
+POST {{baseUrl}}/churches/{{churchId}}/batches/{{batchId}}/archive
+
+### Get batch by ID
+GET {{baseUrl}}/churches/{{churchId}}/batches/{{batchId}}
+
+### Update batch
+PATCH {{baseUrl}}/churches/{{churchId}}/batches/{{batchId}}
+Content-Type: application/json
+
+{
+  "status": "closed",
+  "archived": true
+}
+
+### Delete batch
+DELETE {{baseUrl}}/churches/{{churchId}}/batches/{{batchId}}

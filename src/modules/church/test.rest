@@ -1,0 +1,35 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = {{onboard_church.response.body.data.churchId}}
+@userId = user-uuid-here
+
+### Onboard a new church (session cookie / Bearer required)
+# @name onboard_church
+POST {{baseUrl}}/onboarding/church
+Content-Type: application/json
+
+{
+  "church": {
+    "name": "Global Victory Church",
+    "slug": "global-victory",
+    "logo": "https://example.com/logo.png",
+    "denomination": "Non-denominational"
+  },
+  "branch": {
+    "name": "Main HQ",
+    "address": "123 Faith Lane",
+    "email": "hq@globalvictory.org"
+  }
+}
+
+### Get church details
+GET {{baseUrl}}/churches/{{churchId}}
+
+### List all branches
+GET {{baseUrl}}/churches/{{churchId}}/branches?limit=10&offset=0
+
+### Get overview report
+GET {{baseUrl}}/churches/{{churchId}}/reports
+
+### Get messagings
+GET {{baseUrl}}/churches/{{churchId}}/messagings

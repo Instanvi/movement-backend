@@ -1,0 +1,90 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1775443567501,
+      "tag": "0000_init_church_infrastructure",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775443923891,
+      "tag": "0001_add_stream_metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775445000000,
+      "tag": "0002_member_age_visitor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775446000000,
+      "tag": "0003_group_extended",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775447000000,
+      "tag": "0004_archived_at_all_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775448000000,
+      "tag": "0005_pledge_campaign",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775908688805,
+      "tag": "0006_red_ego",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775910441326,
+      "tag": "0007_left_bruce_banner",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775911644974,
+      "tag": "0008_grey_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775917235305,
+      "tag": "0009_clear_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775918237293,
+      "tag": "0010_remove_church_tax_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1775930359961,
+      "tag": "0011_church_identity_branch_contact",
+      "breakpoints": true
+    }
+  ]
+}

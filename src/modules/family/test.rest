@@ -1,0 +1,40 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@familyId = family-uuid-here
+@memberId = member-uuid-here
+
+### Create a new family
+POST {{baseUrl}}/churches/{{churchId}}/families
+Content-Type: application/json
+
+{
+  "name": "The Smiths",
+  "headOfHouseId": "{{memberId}}"
+}
+
+### List families
+GET {{baseUrl}}/churches/{{churchId}}/families
+
+### Get family by ID
+GET {{baseUrl}}/churches/{{churchId}}/families/{{familyId}}
+
+### Update family
+PATCH {{baseUrl}}/churches/{{churchId}}/families/{{familyId}}
+Content-Type: application/json
+
+{
+  "name": "The Smith Family Revised"
+}
+
+### Add a member to a family
+POST {{baseUrl}}/churches/{{churchId}}/families/{{familyId}}/members
+Content-Type: application/json
+
+{
+  "memberId": "{{memberId}}",
+  "familyRole": "Spouse"
+}
+
+### Remove a member from a family
+DELETE {{baseUrl}}/churches/{{churchId}}/families/{{familyId}}/members/{{memberId}}

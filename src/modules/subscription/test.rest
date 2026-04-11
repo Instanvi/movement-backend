@@ -1,0 +1,34 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@subscriptionId = subscription-uuid-here
+
+### Create a subscription
+POST {{baseUrl}}/churches/{{churchId}}/subscriptions
+Content-Type: application/json
+
+{
+  "plan": "pro",
+  "status": "active",
+  "stripePriceId": "price_123"
+}
+
+### List subscriptions
+GET {{baseUrl}}/churches/{{churchId}}/subscriptions
+
+### Get active subscription
+GET {{baseUrl}}/churches/{{churchId}}/subscriptions/active
+
+### Get subscription by ID
+GET {{baseUrl}}/churches/{{churchId}}/subscriptions/{{subscriptionId}}
+
+### Update subscription
+PATCH {{baseUrl}}/churches/{{churchId}}/subscriptions/{{subscriptionId}}
+Content-Type: application/json
+
+{
+  "plan": "enterprise"
+}
+
+### Delete subscription
+DELETE {{baseUrl}}/churches/{{churchId}}/subscriptions/{{subscriptionId}}

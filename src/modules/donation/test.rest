@@ -1,0 +1,29 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@branchId = branch-uuid-here
+@donorId = user-uuid-here
+@donationId = donation-uuid-here
+
+### Create a new donation
+POST {{baseUrl}}/churches/{{churchId}}/donations
+Content-Type: application/json
+
+{
+  "amount": 100.0,
+  "currency": "USD",
+  "method": "Cash",
+  "isAnonymous": false,
+  "message": "Monthly tithe",
+  "branchId": "{{branchId}}",
+  "donorId": "{{donorId}}"
+}
+
+### List donations of a church
+GET {{baseUrl}}/churches/{{churchId}}/donations
+
+### List donations of a branch
+GET {{baseUrl}}/churches/{{churchId}}/branches/{{branchId}}/donations
+
+### Get donation by ID
+GET {{baseUrl}}/churches/{{churchId}}/donations/{{donationId}}

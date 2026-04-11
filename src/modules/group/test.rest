@@ -1,0 +1,31 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@groupId = group-uuid-here
+@memberId = member-uuid-here
+
+### Create a new group
+POST {{baseUrl}}/churches/{{churchId}}/groups
+Content-Type: application/json
+
+{
+  "name": "Youth Fellowship",
+  "description": "Weekly gathering for spiritual growth"
+}
+
+### List all groups
+GET {{baseUrl}}/churches/{{churchId}}/groups
+
+### Add a member to a group
+POST {{baseUrl}}/churches/{{churchId}}/groups/{{groupId}}/members
+Content-Type: application/json
+
+{
+  "memberId": "{{memberId}}"
+}
+
+### List members of a group
+GET {{baseUrl}}/churches/{{churchId}}/groups/{{groupId}}/members
+
+### Remove a member from a group
+DELETE {{baseUrl}}/churches/{{churchId}}/groups/{{groupId}}/members/{{memberId}}

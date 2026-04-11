@@ -1,0 +1,93 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@fundId = fund-uuid-here
+@accountId = account-uuid-here
+@campaignId = pledge-campaign-uuid-here
+
+### Create a new fund
+POST {{baseUrl}}/churches/{{churchId}}/finance/funds
+Content-Type: application/json
+
+{
+  "name": "General Fund",
+  "description": "Main church operations fund",
+  "targetAmount": 1000000.0,
+  "isRestricted": false
+}
+
+### List funds
+GET {{baseUrl}}/churches/{{churchId}}/finance/funds
+
+### Create pledge campaign (Gracely “Create campaign”)
+POST {{baseUrl}}/churches/{{churchId}}/finance/pledge-campaigns
+Content-Type: application/json
+
+{
+  "name": "Building 2026",
+  "fundId": "{{fundId}}",
+  "startDate": "2026-04-11",
+  "endDate": "2027-04-11"
+}
+
+### Pledge campaigns dashboard (summary + table rows; same as Gracely pledge-accounts)
+GET {{baseUrl}}/churches/{{churchId}}/finance/pledge-campaigns?filter=all&search=
+
+### Alias path (matches Gracely URL segment)
+GET {{baseUrl}}/churches/{{churchId}}/finance/pledge-accounts?filter=in_progress
+
+### Completed campaigns tab
+GET {{baseUrl}}/churches/{{churchId}}/finance/pledge-campaigns?filter=completed
+
+### List pledges in a campaign
+GET {{baseUrl}}/churches/{{churchId}}/finance/pledge-campaigns/{{campaignId}}/pledges
+
+### Create member pledge (optional pledgeCampaignId)
+POST {{baseUrl}}/churches/{{churchId}}/finance/pledges
+Content-Type: application/json
+
+{
+  "userId": "user-uuid-here",
+  "fundId": "{{fundId}}",
+  "pledgeCampaignId": "{{campaignId}}",
+  "targetAmount": 1200,
+  "startDate": "2026-04-11",
+  "endDate": "2027-04-11"
+}
+
+### Create financial account (Gracely “Create Account” modal)
+POST {{baseUrl}}/churches/{{churchId}}/finance/accounts
+Content-Type: application/json
+
+{
+  "name": "Operating Checking",
+  "code": "878",
+  "type": "asset",
+  "description": "Main operating bank",
+  "fundId": "{{fundId}}",
+  "openingBalance": 0,
+  "openingDate": "2026-04-11"
+}
+
+### Accounting overview (KPIs + table; Gracely /accounting)
+GET {{baseUrl}}/churches/{{churchId}}/finance/accounting?filter=all&search=
+
+### Asset tab
+GET {{baseUrl}}/churches/{{churchId}}/finance/accounting?filter=asset
+
+### List all ledger accounts (includes non–chart-of-accounts types)
+GET {{baseUrl}}/churches/{{churchId}}/finance/accounts
+
+### Record a transaction
+POST {{baseUrl}}/churches/{{churchId}}/finance/accounts/{{accountId}}/transactions
+Content-Type: application/json
+
+{
+  "amount": 500.0,
+  "description": "Sunday Offering Deposit",
+  "type": "credit",
+  "fundId": "{{fundId}}"
+}
+
+### List transactions for an account
+GET {{baseUrl}}/churches/{{churchId}}/finance/accounts/{{accountId}}/transactions

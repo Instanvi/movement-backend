@@ -1,0 +1,40 @@
+### Variables
+@baseUrl = http://localhost:5550/api/v1
+@churchId = church-uuid-here
+@branchId = branch-uuid-here
+@memberId = member-uuid-here
+@userId = user-uuid-here
+
+### List members of a church
+GET {{baseUrl}}/churches/{{churchId}}/members
+
+### List members of a branch
+GET {{baseUrl}}/churches/{{churchId}}/branches/{{branchId}}/members
+
+### Search members
+GET {{baseUrl}}/churches/{{churchId}}/members/search?query=christian
+
+### Create member (Assign user to church)
+POST {{baseUrl}}/churches/{{churchId}}/members
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "branchId": "{{branchId}}",
+  "role": "member"
+}
+
+### Get member details
+GET {{baseUrl}}/churches/{{churchId}}/members/{{memberId}}
+
+### Update member
+PATCH {{baseUrl}}/churches/{{churchId}}/members/{{memberId}}
+Content-Type: application/json
+
+{
+  "role": "pastor",
+  "status": "active"
+}
+
+### Delete member
+DELETE {{baseUrl}}/churches/{{churchId}}/members/{{memberId}}

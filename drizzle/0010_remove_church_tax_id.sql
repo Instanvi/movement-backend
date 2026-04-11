@@ -1,0 +1,1 @@
+ALTER TABLE "church" DROP COLUMN "tax_id";

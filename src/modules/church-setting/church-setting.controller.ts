@@ -14,7 +14,13 @@ import { ChurchSettingService } from './church-setting.service';
 import {
   UpdateChurchSettingDto,
   CreateCustomFieldDto,
+  ChurchSettingDto,
+  CustomFieldDto,
 } from './dto/church-setting.dto';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
@@ -30,6 +36,7 @@ export class ChurchSettingController {
   @Get()
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'Get church settings' })
+  @ApiBaseResponse(ChurchSettingDto)
   async getSetting(@Param('churchId') churchId: string) {
     return await this.settingService.getSetting(churchId);
   }
@@ -38,6 +45,7 @@ export class ChurchSettingController {
   @Roles('admin')
   @ApiOperation({ summary: 'Update church settings' })
   @ApiBody({ type: UpdateChurchSettingDto })
+  @ApiBaseResponse(ChurchSettingDto)
   async updateSetting(
     @Param('churchId') churchId: string,
     @Body() body: UpdateChurchSettingDto,
@@ -48,6 +56,7 @@ export class ChurchSettingController {
   @Get('custom-fields')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List custom member fields' })
+  @ApiArrayResponse(CustomFieldDto)
   async getCustomFields(@Param('churchId') churchId: string) {
     return await this.settingService.getCustomFields(churchId);
   }
@@ -56,6 +65,7 @@ export class ChurchSettingController {
   @Roles('admin')
   @ApiOperation({ summary: 'Create custom member field' })
   @ApiBody({ type: CreateCustomFieldDto })
+  @ApiBaseResponse(CustomFieldDto)
   async createCustomField(
     @Param('churchId') churchId: string,
     @Body() body: CreateCustomFieldDto,

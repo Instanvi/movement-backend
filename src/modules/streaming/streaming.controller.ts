@@ -23,6 +23,13 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  StreamPlatformDto,
+} from './dto/streaming.dto';
 
 @ApiTags('streaming')
 @ApiChurchRouteAuth()
@@ -36,6 +43,7 @@ export class StreamingController {
   @Roles('admin', 'pastor')
   @ApiOperation({ summary: 'Add streaming platform' })
   @ApiBody({ type: CreateStreamPlatformDto })
+  @ApiBaseResponse(StreamPlatformDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateStreamPlatformDto,
@@ -47,6 +55,7 @@ export class StreamingController {
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List streaming platforms' })
   @ApiQuery({ name: 'branchId', required: false, schema: { format: 'uuid' } })
+  @ApiArrayResponse(StreamPlatformDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('branchId') branchId?: string,

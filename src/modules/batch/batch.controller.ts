@@ -24,6 +24,14 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  BatchDto,
+  BatchOverviewDto,
+} from './dto/batch.dto';
 import { BatchListFilter } from '../../domain/repositories/batch.repository';
 
 const BATCH_FILTERS: BatchListFilter[] = ['all', 'open', 'archived'];
@@ -47,6 +55,7 @@ export class BatchController {
   @Post()
   @ApiOperation({ summary: 'Create batch' })
   @ApiBody({ type: CreateBatchDto })
+  @ApiBaseResponse(BatchDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateBatchDto,
@@ -74,6 +83,7 @@ export class BatchController {
   })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiBaseResponse(BatchOverviewDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('filter') filterRaw?: string,
@@ -99,6 +109,7 @@ export class BatchController {
   @Get(':id')
   @ApiUuidPathParam('id', 'Batch ID')
   @ApiOperation({ summary: 'Get batch by ID' })
+  @ApiBaseResponse(BatchDto)
   async getById(@Param('churchId') churchId: string, @Param('id') id: string) {
     return await this.batchService.findOne(churchId, id);
   }

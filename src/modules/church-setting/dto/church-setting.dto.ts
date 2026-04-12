@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -58,5 +58,48 @@ export class CreateCustomFieldDto {
   @ApiProperty({ example: ['Faith', 'Hope'], required: false })
   @IsOptional()
   @IsObject()
+  options?: any;
+}
+
+export class ChurchSettingDto {
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  defaultPronouns: boolean;
+
+  @ApiProperty()
+  genderOptionType: string;
+
+  @ApiProperty()
+  ageGroups: any;
+
+  @ApiProperty()
+  defaultCurrency: string;
+
+  @ApiProperty()
+  defaultTimezone: string;
+}
+
+export class CustomFieldDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  label: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiPropertyOptional()
+  placeholder?: string;
+
+  @ApiProperty()
+  showOnPortal: boolean;
+
+  @ApiPropertyOptional()
   options?: any;
 }

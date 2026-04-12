@@ -57,3 +57,75 @@ export class CreateFormDto {
   @IsNotEmpty()
   schema: any; // JSON definition of form fields
 }
+
+export class AnnouncementDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty()
+  content: string;
+
+  @ApiPropertyOptional()
+  audienceType?: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  isPinned: boolean;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}
+
+export class FormDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiProperty()
+  schema: any;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}
+
+export class FormSubmissionDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  formId: string;
+
+  @ApiProperty()
+  memberId: string;
+
+  @ApiProperty()
+  data: any;
+
+  @ApiProperty()
+  createdAt: string;
+}

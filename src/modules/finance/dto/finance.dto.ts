@@ -224,3 +224,257 @@ export class CreateTransactionDto {
   @IsUUID()
   fundId?: string;
 }
+
+export class FinancialAccountDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  code?: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty({ enum: AccountType })
+  type: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiPropertyOptional()
+  fundId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}
+
+export class FundDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiPropertyOptional()
+  targetAmount?: string;
+
+  @ApiProperty()
+  isRestricted: boolean;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}
+
+export class PledgeCampaignDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  fundId: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  startDate: string;
+
+  @ApiPropertyOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}
+
+export class StewardshipPledgeDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  fundId: string;
+
+  @ApiPropertyOptional()
+  pledgeCampaignId?: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  targetAmount: string;
+
+  @ApiPropertyOptional()
+  startDate?: string;
+
+  @ApiPropertyOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+}
+
+export class TransactionDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  amount: string;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiPropertyOptional()
+  category?: string;
+
+  @ApiProperty()
+  date: string;
+
+  @ApiProperty()
+  accountId: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  referenceId?: string;
+
+  @ApiPropertyOptional()
+  fundId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+}
+
+export class AccountingOverviewSummaryDto {
+  @ApiProperty()
+  totalBalance: number;
+
+  @ApiProperty()
+  assetAccountCount: number;
+
+  @ApiProperty()
+  liabilityAccountCount: number;
+
+  @ApiProperty()
+  categoryCount: number;
+
+  @ApiProperty()
+  payeeCount: number;
+}
+
+export class AccountingOverviewAccountDto extends FinancialAccountDto {
+  @ApiProperty()
+  balance: number;
+
+  @ApiPropertyOptional()
+  fundName?: string;
+}
+
+export class AccountingOverviewDto {
+  @ApiProperty()
+  summary: AccountingOverviewSummaryDto;
+
+  @ApiProperty({ type: [AccountingOverviewAccountDto] })
+  accounts: AccountingOverviewAccountDto[];
+}
+
+export class PledgeCampaignOverviewSummaryDto {
+  @ApiProperty()
+  totalPledged: number;
+
+  @ApiProperty()
+  totalRaised: number;
+
+  @ApiProperty()
+  remaining: number;
+}
+
+export class PledgeCampaignDetailedDto extends PledgeCampaignDto {
+  @ApiPropertyOptional()
+  fundName?: string;
+
+  @ApiProperty()
+  totalPledged: number;
+
+  @ApiProperty()
+  totalRaised: number;
+
+  @ApiProperty()
+  remaining: number;
+
+  @ApiProperty()
+  progressPercent: number;
+}
+
+export class PledgeCampaignOverviewDto {
+  @ApiProperty()
+  summary: PledgeCampaignOverviewSummaryDto;
+
+  @ApiProperty({ type: [PledgeCampaignDetailedDto] })
+  campaigns: PledgeCampaignDetailedDto[];
+}
+
+export class FundStatDto {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  balance: number;
+
+  @ApiPropertyOptional()
+  target?: number;
+
+  @ApiPropertyOptional()
+  progress?: number;
+}
+
+export class StatsDto {
+  @ApiProperty()
+  totalBalance: number;
+
+  @ApiProperty()
+  accountCount: number;
+
+  @ApiProperty()
+  fundCount: number;
+
+  @ApiProperty({ type: [FundStatDto] })
+  funds: FundStatDto[];
+}

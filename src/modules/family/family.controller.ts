@@ -21,10 +21,14 @@ import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
-import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import { FamilyDto } from './dto/family.dto';
 
 @ApiTags('families')
 @ApiChurchRouteAuth()
@@ -38,6 +42,7 @@ export class FamilyController {
   @Post()
   @ApiOperation({ summary: 'Create family' })
   @ApiBody({ type: CreateFamilyDto })
+  @ApiBaseResponse(FamilyDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateFamilyDto,
@@ -50,6 +55,7 @@ export class FamilyController {
   @ApiOperation({ summary: 'List families' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(FamilyDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('limit') limit?: number,
@@ -68,6 +74,7 @@ export class FamilyController {
     summary: 'Get family',
     description: 'Family row, members, head of household, and child count.',
   })
+  @ApiBaseResponse(FamilyDto)
   async getById(@Param('churchId') churchId: string, @Param('id') id: string) {
     return await this.familyService.getProfile(id, churchId);
   }
@@ -92,6 +99,7 @@ export class FamilyController {
   @ApiUuidPathParam('id', 'Family ID')
   @ApiOperation({ summary: 'Update family' })
   @ApiBody({ type: UpdateFamilyDto })
+  @ApiBaseResponse(FamilyDto)
   async update(
     @Param('churchId') churchId: string,
     @Param('id') id: string,

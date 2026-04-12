@@ -47,3 +47,53 @@ export class CreateBranchDto {
   @IsOptional()
   website?: string;
 }
+
+export class BranchDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  address?: string;
+
+  @ApiPropertyOptional()
+  city?: string;
+
+  @ApiPropertyOptional()
+  state?: string;
+
+  @ApiPropertyOptional()
+  country?: string;
+
+  @ApiPropertyOptional()
+  zipCode?: string;
+
+  @ApiPropertyOptional()
+  latitude?: string;
+
+  @ApiPropertyOptional()
+  longitude?: string;
+
+  @ApiPropertyOptional()
+  phoneNumber?: string;
+
+  @ApiPropertyOptional()
+  email?: string;
+
+  @ApiPropertyOptional()
+  website?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}

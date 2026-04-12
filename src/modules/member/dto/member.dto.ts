@@ -184,3 +184,49 @@ export class UpdateMemberDto {
   @IsBoolean()
   isVisitor?: boolean;
 }
+
+export class MemberDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  userId: string;
+
+  @ApiPropertyOptional()
+  familyId?: string;
+
+  @ApiProperty({ enum: MemberRoles })
+  role: MemberRole;
+
+  @ApiProperty()
+  gender: string;
+
+  @ApiPropertyOptional()
+  ageGroup?: string;
+
+  @ApiProperty()
+  isVisitor: boolean;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}
+
+export class MemberListDto {
+  @ApiProperty({ type: [MemberDto] })
+  items: MemberDto[];
+
+  @ApiProperty()
+  count: number;
+}

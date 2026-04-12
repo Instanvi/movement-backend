@@ -79,3 +79,102 @@ export class CreateEventDto {
   @IsOptional()
   allDay?: boolean;
 }
+
+export class RoomDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  capacity?: number;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}
+
+export class AppointmentTypeDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiPropertyOptional()
+  location?: string;
+
+  @ApiProperty()
+  duration: number;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}
+
+export class EventDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty()
+  startTime: string;
+
+  @ApiProperty()
+  endTime: string;
+
+  @ApiPropertyOptional()
+  location?: string;
+
+  @ApiProperty()
+  allDay: boolean;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiPropertyOptional()
+  roomId?: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}

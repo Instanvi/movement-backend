@@ -27,6 +27,20 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  FinancialAccountDto,
+  FundDto,
+  TransactionDto,
+  PledgeCampaignDto,
+  StewardshipPledgeDto,
+  AccountingOverviewDto,
+  PledgeCampaignOverviewDto,
+  StatsDto,
+} from './dto/finance.dto';
 
 @ApiTags('finance')
 @ApiChurchRouteAuth()
@@ -49,6 +63,7 @@ export class FinanceController {
   @Post('accounts')
   @ApiOperation({ summary: 'Create ledger account' })
   @ApiBody({ type: CreateFinancialAccountDto })
+  @ApiBaseResponse(FinancialAccountDto)
   async createAccount(
     @Param('churchId') churchId: string,
     @Body() body: CreateFinancialAccountDto,
@@ -62,6 +77,7 @@ export class FinanceController {
     description:
       'Raw list (all account types). For the Gracely Accounting grid and KPIs, prefer GET …/finance/accounting.',
   })
+  @ApiArrayResponse(FinancialAccountDto)
   async listAccounts(@Param('churchId') churchId: string) {
     return await this.financeService.listAccountsByChurch(churchId);
   }
@@ -83,6 +99,7 @@ export class FinanceController {
     required: false,
     description: 'Case-insensitive match on account name',
   })
+  @ApiBaseResponse(AccountingOverviewDto)
   async accountingOverview(
     @Param('churchId') churchId: string,
     @Query('filter') filterRaw?: string,
@@ -98,6 +115,7 @@ export class FinanceController {
   @ApiUuidPathParam('accountId', 'Financial account ID')
   @ApiOperation({ summary: 'Post transaction' })
   @ApiBody({ type: CreateTransactionDto })
+  @ApiBaseResponse(TransactionDto)
   async addTransaction(
     @Param('churchId') churchId: string,
     @Param('accountId') accountId: string,
@@ -113,6 +131,7 @@ export class FinanceController {
   @Get('accounts/:accountId/transactions')
   @ApiUuidPathParam('accountId', 'Financial account ID')
   @ApiOperation({ summary: 'List transactions for account' })
+  @ApiArrayResponse(TransactionDto)
   async getTransactions(
     @Param('churchId') churchId: string,
     @Param('accountId') accountId: string,
@@ -123,6 +142,7 @@ export class FinanceController {
   @Post('funds')
   @ApiOperation({ summary: 'Create fund' })
   @ApiBody({ type: CreateFundDto })
+  @ApiBaseResponse(FundDto)
   async createFund(
     @Param('churchId') churchId: string,
     @Body() body: CreateFundDto,
@@ -132,6 +152,7 @@ export class FinanceController {
 
   @Get('funds')
   @ApiOperation({ summary: 'List funds' })
+  @ApiArrayResponse(FundDto)
   async listFunds(@Param('churchId') churchId: string) {
     return await this.financeService.listFundsByChurch(churchId);
   }
@@ -139,6 +160,7 @@ export class FinanceController {
   @Post('pledge-campaigns')
   @ApiOperation({ summary: 'Create pledge campaign' })
   @ApiBody({ type: CreatePledgeCampaignDto })
+  @ApiBaseResponse(PledgeCampaignDto)
   async createPledgeCampaign(
     @Param('churchId') churchId: string,
     @Body() body: CreatePledgeCampaignDto,
@@ -164,6 +186,7 @@ export class FinanceController {
     required: false,
     description: 'Case-insensitive partial match on campaign name',
   })
+  @ApiBaseResponse(PledgeCampaignOverviewDto)
   async pledgeCampaignsOverview(
     @Param('churchId') churchId: string,
     @Query('filter') filter?: string,
@@ -179,6 +202,7 @@ export class FinanceController {
   @ApiUuidPathParam('campaignId', 'Pledge campaign ID')
   @ApiOperation({ summary: 'Update or archive pledge campaign' })
   @ApiBody({ type: UpdatePledgeCampaignDto })
+  @ApiBaseResponse(PledgeCampaignDto)
   async updatePledgeCampaign(
     @Param('churchId') churchId: string,
     @Param('campaignId') campaignId: string,
@@ -194,6 +218,7 @@ export class FinanceController {
   @Get('pledge-campaigns/:campaignId/pledges')
   @ApiUuidPathParam('campaignId', 'Pledge campaign ID')
   @ApiOperation({ summary: 'List pledges in a campaign' })
+  @ApiArrayResponse(StewardshipPledgeDto)
   async listPledgesForCampaign(
     @Param('churchId') churchId: string,
     @Param('campaignId') campaignId: string,
@@ -207,6 +232,7 @@ export class FinanceController {
   @Post('pledges')
   @ApiOperation({ summary: 'Create member pledge' })
   @ApiBody({ type: CreateStewardshipPledgeDto })
+  @ApiBaseResponse(StewardshipPledgeDto)
   async createPledge(
     @Param('churchId') churchId: string,
     @Body() body: CreateStewardshipPledgeDto,
@@ -217,6 +243,7 @@ export class FinanceController {
   @Get('stats')
   @ApiOperation({ summary: 'Financial summary' })
   @ApiQuery({ name: 'branchId', required: false, schema: { format: 'uuid' } })
+  @ApiBaseResponse(StatsDto)
   async getStats(
     @Param('churchId') churchId: string,
     @Query('branchId') branchId?: string,

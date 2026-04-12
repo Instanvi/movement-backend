@@ -8,6 +8,11 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import { ProjectDto } from './dto/project.dto';
 
 @ApiTags('projects')
 @ApiChurchRouteAuth()
@@ -21,6 +26,7 @@ export class ProjectController {
   @Roles('admin', 'pastor')
   @ApiOperation({ summary: 'Create project' })
   @ApiBody({ type: CreateProjectDto })
+  @ApiBaseResponse(ProjectDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateProjectDto,
@@ -34,6 +40,7 @@ export class ProjectController {
   @ApiQuery({ name: 'branchId', required: true, schema: { format: 'uuid' } })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(ProjectDto)
   async listActive(
     @Query('branchId') branchId: string,
     @Query('limit') limit: number = 10,

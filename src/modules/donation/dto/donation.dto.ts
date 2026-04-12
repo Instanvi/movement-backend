@@ -81,3 +81,62 @@ export class CreateDonationDto {
   @IsUUID()
   projectItemId?: string;
 }
+
+export class DonationDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  amount: string;
+
+  @ApiProperty()
+  currency: string;
+
+  @ApiProperty()
+  donorId: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  branchId: string;
+
+  @ApiPropertyOptional()
+  familyId?: string;
+
+  @ApiPropertyOptional()
+  fundId?: string;
+
+  @ApiPropertyOptional()
+  batchId?: string;
+
+  @ApiPropertyOptional()
+  projectId?: string;
+
+  @ApiPropertyOptional()
+  projectItemId?: string;
+
+  @ApiProperty({ enum: ['Cash', 'Check', 'Online', 'Bank Transfer', 'Card', 'Other'] })
+  method: string;
+
+  @ApiProperty()
+  isRecurring: boolean;
+
+  @ApiProperty()
+  isAnonymous: boolean;
+
+  @ApiPropertyOptional()
+  message?: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}

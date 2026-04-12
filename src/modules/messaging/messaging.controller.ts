@@ -3,6 +3,11 @@ import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { MessagingService } from './messaging.service';
 import { CreateMessagingDto, SendBulkMessagingDto } from './dto/messaging.dto';
 import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import { MessagingDto } from './dto/messaging.dto';
 
 @ApiTags('messaging')
 @ApiChurchIdParam()
@@ -13,6 +18,7 @@ export class MessagingController {
   @Post()
   @ApiOperation({ summary: 'Create messaging' })
   @ApiBody({ type: CreateMessagingDto })
+  @ApiBaseResponse(MessagingDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateMessagingDto,
@@ -23,6 +29,7 @@ export class MessagingController {
   @Post('bulk')
   @ApiOperation({ summary: 'Create bulk messaging' })
   @ApiBody({ type: SendBulkMessagingDto })
+  @ApiBaseResponse(MessagingDto)
   async sendBulk(
     @Param('churchId') churchId: string,
     @Body() body: SendBulkMessagingDto,
@@ -35,6 +42,7 @@ export class MessagingController {
   @ApiQuery({ name: 'branchId', required: false, schema: { format: 'uuid' } })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(MessagingDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('branchId') branchId?: string,

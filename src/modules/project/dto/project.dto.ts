@@ -35,3 +35,73 @@ export class CreateProjectItemDto {
   @ApiProperty({ example: 15000.0 })
   targetAmount: number;
 }
+
+export class ProjectDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  targetAmount: string;
+
+  @ApiProperty()
+  raisedAmount: string;
+
+  @ApiProperty()
+  startDate: string;
+
+  @ApiPropertyOptional()
+  endDate?: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}
+
+export class ProjectItemDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  projectId: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty()
+  targetAmount: string;
+
+  @ApiProperty()
+  raisedAmount: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}

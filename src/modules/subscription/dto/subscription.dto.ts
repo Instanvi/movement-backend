@@ -59,8 +59,65 @@ export class CreateSubscriptionDto extends OmitType(UpdateSubscriptionDto, [
   'plan',
 ] as const) {
   @IsString()
-  churchId: string;
-
   @IsEnum(['free', 'standard', 'pro'])
   plan: 'free' | 'standard' | 'pro';
+}
+
+export class SubscriptionDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  stripeSubscriptionId?: string;
+
+  @ApiPropertyOptional()
+  stripeCustomerId?: string;
+
+  @ApiPropertyOptional()
+  stripePriceId?: string;
+
+  @ApiProperty({ enum: ['active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'trialing', 'unpaid', 'paused'] })
+  status: string;
+
+  @ApiProperty({ enum: ['free', 'standard', 'pro'] })
+  plan: string;
+
+  @ApiProperty()
+  cancelAtPeriodEnd: boolean;
+
+  @ApiPropertyOptional()
+  currentPeriodStart?: string;
+
+  @ApiPropertyOptional()
+  currentPeriodEnd?: string;
+
+  @ApiPropertyOptional()
+  trialStart?: string;
+
+  @ApiPropertyOptional()
+  trialEnd?: string;
+
+  @ApiPropertyOptional()
+  endedAt?: string;
+
+  @ApiPropertyOptional()
+  cancelAt?: string;
+
+  @ApiPropertyOptional()
+  canceledAt?: string;
+
+  @ApiPropertyOptional()
+  metadata?: any;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
 }

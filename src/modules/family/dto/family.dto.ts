@@ -90,8 +90,32 @@ export class AddMemberToFamilyDto {
 export class AssignHeadOfHouseDto {
   @ApiProperty({
     description:
-      'Member already in this family who becomes head of household / main contact.',
-  })
   @IsUUID()
   memberId: string;
+}
+
+export class FamilyDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiPropertyOptional()
+  headOfHouseId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
 }

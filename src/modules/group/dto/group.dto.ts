@@ -101,3 +101,61 @@ export class AddMemberToGroupDto {
   @IsBoolean()
   isLeader?: boolean;
 }
+
+export class GroupDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty({ enum: GroupVisibilities })
+  visibility: string;
+
+  @ApiProperty({ enum: GroupEnrollments })
+  enrollment: string;
+
+  @ApiPropertyOptional()
+  location?: string;
+
+  @ApiPropertyOptional()
+  meetupSummary?: string;
+
+  @ApiPropertyOptional()
+  iconUrl?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}
+
+export class GroupMemberDto {
+  @ApiProperty()
+  groupId: string;
+
+  @ApiProperty()
+  memberId: string;
+
+  @ApiProperty()
+  joinedAt: string;
+
+  @ApiProperty()
+  isLeader: boolean;
+
+  @ApiPropertyOptional()
+  addedByUserId?: string;
+}

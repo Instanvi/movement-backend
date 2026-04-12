@@ -39,11 +39,60 @@ export class UpdateBatchDto extends PartialType(CreateBatchDto) {
   archived?: boolean;
 }
 
-export class DepositBatchDto {
-  @ApiProperty({
-    description:
-      'Ledger financial account ID (asset, e.g. checking) to credit for bank reconciliation.',
-  })
   @IsUUID()
   accountId: string;
+}
+
+export class BatchDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty({ enum: ['open', 'closed', 'processing', 'voided'] })
+  status: string;
+
+  @ApiProperty()
+  batchDate: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+
+  @ApiPropertyOptional()
+  totalAmount?: string;
+
+  @ApiPropertyOptional()
+  uniqueContributors?: number;
+}
+
+export class BatchOverviewSummaryDto {
+  @ApiProperty()
+  batchCount: number;
+
+  @ApiProperty()
+  uniqueContributors: number;
+}
+
+export class BatchOverviewDto {
+  @ApiProperty()
+  summary: BatchOverviewSummaryDto;
+
+  @ApiProperty({ type: [BatchDto] })
+  batches: BatchDto[];
 }

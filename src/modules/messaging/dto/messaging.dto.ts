@@ -49,8 +49,39 @@ export class SendBulkMessagingDto extends CreateMessagingDto {
     enum: ['all', 'new_members', 'old_members', 'active'],
     example: 'new_members',
   })
-  @IsString()
   @IsNotEmpty()
   @IsIn(['all', 'new_members', 'old_members', 'active'])
   targetAudience: string;
+}
+
+export class MessagingDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty()
+  content: string;
+
+  @ApiProperty({ enum: ['info', 'announcement', 'event'] })
+  type: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+
+  @ApiPropertyOptional()
+  targetAudience?: string;
+
+  @ApiPropertyOptional()
+  sentToCount?: number;
 }

@@ -39,9 +39,51 @@ export class CreateStreamPlatformDto {
   isEnabled?: boolean;
 }
 
-export class UpdateStreamStatusDto {
-  @ApiProperty({ example: 'live' })
   @IsString()
   @IsNotEmpty()
   status: string; // 'offline', 'live'
+}
+
+export class StreamPlatformDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  isEnabled: boolean;
+
+  @ApiProperty()
+  rtmpUrl: string;
+
+  @ApiProperty()
+  streamKey: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiPropertyOptional()
+  branchId?: string;
+
+  @ApiProperty()
+  createdById: string;
+
+  @ApiPropertyOptional()
+  lastStartedAt?: string;
+
+  @ApiPropertyOptional()
+  lastStoppedAt?: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
 }

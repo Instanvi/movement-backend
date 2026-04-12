@@ -12,3 +12,32 @@ export class SendInvitationDto {
   @IsNotEmpty()
   role: string;
 }
+
+export class InvitationDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  churchId: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  role: string;
+
+  @ApiProperty()
+  token: string;
+
+  @ApiProperty()
+  expiresAt: string;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiProperty()
+  updatedAt: string;
+}

@@ -1,7 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReportService } from './report.service';
 import { ReportOverviewDto } from './dto/report.dto';
+import { ApiBaseResponse } from '../../core/swagger/responses.decorator';
 import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
 
 @ApiTags('reports')
@@ -12,7 +13,7 @@ export class ReportController {
 
   @Get('overview')
   @ApiOperation({ summary: 'Organization overview' })
-  @ApiOkResponse({ type: ReportOverviewDto })
+  @ApiBaseResponse(ReportOverviewDto)
   async getOverview(@Param('churchId') churchId: string) {
     return this.reportService.getOverview(churchId);
   }

@@ -2,7 +2,15 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import { ApiUuidPathParam } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
 import { ChurchService } from './church.service';
+import { ChurchDto } from './dto/church.dto';
+import { BranchDto } from '../branch/dto/branch.dto';
+import { ReportOverviewDto } from '../report/dto/report.dto';
+import { MessagingDto } from '../messaging/dto/messaging.dto';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
@@ -17,6 +25,7 @@ export class ChurchController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get church by ID' })
+  @ApiBaseResponse(ChurchDto)
   async getChurch(@Param('id') id: string) {
     return this.churchService.getChurch(id);
   }
@@ -25,6 +34,7 @@ export class ChurchController {
   @ApiOperation({ summary: 'List branches for a church' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(BranchDto)
   async listBranches(
     @Param('id') id: string,
     @Query('limit') limit: number = 10,
@@ -36,6 +46,7 @@ export class ChurchController {
   @Get(':id/reports')
   @Roles('admin', 'overseer')
   @ApiOperation({ summary: 'Church overview report' })
+  @ApiBaseResponse(ReportOverviewDto)
   async getReport(@Param('id') id: string) {
     return this.churchService.getReport(id);
   }
@@ -48,6 +59,7 @@ export class ChurchController {
     schema: { type: 'string', format: 'uuid' },
     description: 'Filter by branch',
   })
+  @ApiArrayResponse(MessagingDto)
   async getMessagings(
     @Param('id') id: string,
     @Query('branchId') branchId?: string,

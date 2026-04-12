@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { InvitationService } from './invitation.service';
-import { SendInvitationDto } from './dto/invitation.dto';
+import { SendInvitationDto, InvitationDto } from './dto/invitation.dto';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
@@ -34,6 +38,7 @@ export class InvitationController {
   @Post()
   @ApiOperation({ summary: 'Send invitation' })
   @ApiBody({ type: SendInvitationDto })
+  @ApiBaseResponse(InvitationDto)
   async send(
     @Request() req: AuthenticatedRequest,
     @Param('churchId') churchId: string,
@@ -48,6 +53,7 @@ export class InvitationController {
 
   @Get()
   @ApiOperation({ summary: 'List invitations' })
+  @ApiArrayResponse(InvitationDto)
   async list(@Param('churchId') churchId: string) {
     return await this.invitationService.list(churchId);
   }
@@ -55,6 +61,7 @@ export class InvitationController {
   @Delete(':id')
   @ApiUuidPathParam('id', 'Invitation ID')
   @ApiOperation({ summary: 'Revoke invitation' })
+  @ApiBaseResponse(InvitationDto)
   async revoke(@Param('id') id: string) {
     return await this.invitationService.revoke(id);
   }

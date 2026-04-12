@@ -17,6 +17,13 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  SubscriptionDto,
+} from './dto/subscription.dto';
 
 @ApiTags('subscriptions')
 @ApiChurchIdParam()
@@ -27,6 +34,7 @@ export class SubscriptionController {
   @Post()
   @ApiOperation({ summary: 'Create subscription' })
   @ApiBody({ type: CreateSubscriptionDto })
+  @ApiBaseResponse(SubscriptionDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateSubscriptionDto,
@@ -36,12 +44,14 @@ export class SubscriptionController {
 
   @Get()
   @ApiOperation({ summary: 'List subscriptions' })
+  @ApiArrayResponse(SubscriptionDto)
   async list(@Param('churchId') churchId: string) {
     return await this.subscriptionService.getByChurchId(churchId);
   }
 
   @Get('active')
   @ApiOperation({ summary: 'Get active subscription' })
+  @ApiBaseResponse(SubscriptionDto)
   async getActive(@Param('churchId') churchId: string) {
     return await this.subscriptionService.getActiveByChurchId(churchId);
   }
@@ -49,6 +59,7 @@ export class SubscriptionController {
   @Get(':id')
   @ApiUuidPathParam('id', 'Subscription ID')
   @ApiOperation({ summary: 'Get subscription by ID' })
+  @ApiBaseResponse(SubscriptionDto)
   async getById(@Param('id') id: string) {
     return await this.subscriptionService.getById(id);
   }
@@ -57,6 +68,7 @@ export class SubscriptionController {
   @ApiUuidPathParam('id', 'Subscription ID')
   @ApiOperation({ summary: 'Update subscription' })
   @ApiBody({ type: UpdateSubscriptionDto })
+  @ApiBaseResponse(SubscriptionDto)
   async update(@Param('id') id: string, @Body() body: UpdateSubscriptionDto) {
     return await this.subscriptionService.update(id, body);
   }
@@ -64,6 +76,7 @@ export class SubscriptionController {
   @Delete(':id')
   @ApiUuidPathParam('id', 'Subscription ID')
   @ApiOperation({ summary: 'Delete subscription' })
+  @ApiBaseResponse(SubscriptionDto)
   async delete(@Param('id') id: string) {
     return await this.subscriptionService.delete(id);
   }

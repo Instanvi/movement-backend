@@ -11,6 +11,11 @@ import {
   ApiChurchIdParam,
   ApiBranchIdParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import { DonationDto } from './dto/donation.dto';
 
 @ApiTags('donation')
 @ApiChurchRouteAuth()
@@ -30,6 +35,7 @@ export class DonationController {
     required: true,
   })
   @ApiBody({ type: CreateDonationDto })
+  @ApiBaseResponse(DonationDto)
   async create(
     @Param('churchId') churchId: string,
     @Param('branchId') branchId: string,
@@ -44,6 +50,7 @@ export class DonationController {
   @ApiOperation({ summary: 'List donations for branch' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(DonationDto)
   async list(
     @Param('branchId') branchId: string,
     @Query('limit') limit: number = 10,
@@ -57,6 +64,7 @@ export class DonationController {
   @ApiOperation({ summary: 'List donations for church (all branches)' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
+  @ApiArrayResponse(DonationDto)
   async listChurchWide(
     @Param('churchId') churchId: string,
     @Query('limit') limit: number = 10,

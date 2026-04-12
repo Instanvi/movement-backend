@@ -26,6 +26,14 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiPaginatedResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  MemberDto,
+} from './dto/member.dto';
 
 @ApiTags('members')
 @ApiChurchRouteAuth()
@@ -39,6 +47,7 @@ export class MemberController {
   @Post()
   @ApiOperation({ summary: 'Create member' })
   @ApiBody({ type: CreateMemberDto })
+  @ApiBaseResponse(MemberDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateMemberDto,
@@ -61,6 +70,7 @@ export class MemberController {
 
   @Get()
   @ApiOperation({ summary: 'List members' })
+  @ApiArrayResponse(MemberDto)
   async list(@Param('churchId') churchId: string) {
     return await this.memberService.findByChurch(churchId);
   }
@@ -108,6 +118,7 @@ export class MemberController {
   @Get(':memberId')
   @ApiUuidPathParam('memberId', 'Member ID')
   @ApiOperation({ summary: 'Get member by ID' })
+  @ApiBaseResponse(MemberDto)
   async findOne(@Param('memberId') memberId: string) {
     return await this.memberService.findOne(memberId);
   }

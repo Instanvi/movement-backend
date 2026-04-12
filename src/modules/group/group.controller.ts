@@ -7,10 +7,14 @@ import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
-import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import { GroupDto, GroupMemberDto } from './dto/group.dto';
 
 @ApiTags('groups')
 @ApiChurchRouteAuth()
@@ -24,6 +28,7 @@ export class GroupController {
   @Roles('admin', 'pastor')
   @ApiOperation({ summary: 'Create group' })
   @ApiBody({ type: CreateGroupDto })
+  @ApiBaseResponse(GroupDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateGroupDto,
@@ -34,6 +39,7 @@ export class GroupController {
   @Get()
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List groups' })
+  @ApiArrayResponse(GroupDto)
   async list(@Param('churchId') churchId: string) {
     return await this.groupService.listByChurch(churchId);
   }
@@ -43,6 +49,7 @@ export class GroupController {
   @ApiUuidPathParam('id', 'Group ID')
   @ApiOperation({ summary: 'Add member to group' })
   @ApiBody({ type: AddMemberToGroupDto })
+  @ApiBaseResponse(GroupMemberDto)
   async addMember(@Param('id') id: string, @Body() body: AddMemberToGroupDto) {
     return await this.groupService.addMember(id, body.memberId, body.isLeader);
   }
@@ -63,6 +70,7 @@ export class GroupController {
   @Roles('admin', 'pastor', 'member')
   @ApiUuidPathParam('id', 'Group ID')
   @ApiOperation({ summary: 'List group members' })
+  @ApiArrayResponse(GroupMemberDto)
   async getMembers(@Param('id') id: string) {
     return await this.groupService.getMembers(id);
   }

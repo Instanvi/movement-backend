@@ -11,6 +11,15 @@ import {
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { CommunicationService } from './communication.service';
 import { CreateAnnouncementDto, CreateFormDto } from './dto/communication.dto';
+import {
+  AnnouncementDto,
+  FormDto,
+  FormSubmissionDto,
+} from './dto/communication.dto';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
@@ -33,6 +42,7 @@ export class CommunicationController {
   @Roles('admin', 'pastor')
   @ApiOperation({ summary: 'Create announcement' })
   @ApiBody({ type: CreateAnnouncementDto })
+  @ApiBaseResponse(AnnouncementDto)
   async createAnnouncement(
     @Param('churchId') churchId: string,
     @Body() body: CreateAnnouncementDto,
@@ -43,6 +53,7 @@ export class CommunicationController {
   @Get('announcements')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List announcements' })
+  @ApiArrayResponse(AnnouncementDto)
   async getAnnouncements(@Param('churchId') churchId: string) {
     return await this.commsService.getAnnouncements(churchId);
   }
@@ -51,6 +62,7 @@ export class CommunicationController {
   @Roles('admin')
   @ApiOperation({ summary: 'Create form' })
   @ApiBody({ type: CreateFormDto })
+  @ApiBaseResponse(FormDto)
   async createForm(
     @Param('churchId') churchId: string,
     @Body() body: CreateFormDto,
@@ -61,6 +73,7 @@ export class CommunicationController {
   @Get('forms')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List forms' })
+  @ApiArrayResponse(FormDto)
   async getForms(@Param('churchId') churchId: string) {
     return await this.commsService.getForms(churchId);
   }
@@ -76,6 +89,7 @@ export class CommunicationController {
       description: 'Field id → value map',
     },
   })
+  @ApiBaseResponse(FormSubmissionDto)
   async submitForm(
     @Request() req: AuthenticatedRequest,
     @Param('formId') formId: string,
@@ -92,6 +106,7 @@ export class CommunicationController {
   @Roles('admin', 'pastor')
   @ApiUuidPathParam('formId', 'Form ID')
   @ApiOperation({ summary: 'List form responses' })
+  @ApiArrayResponse(FormSubmissionDto)
   async getResponses(@Param('formId') formId: string) {
     return await this.commsService.getResponses(formId);
   }

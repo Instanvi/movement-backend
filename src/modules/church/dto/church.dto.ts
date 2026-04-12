@@ -34,3 +34,29 @@ export class CreateChurchDto {
   @IsOptional()
   metadata?: string;
 }
+
+export class ChurchDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  slug: string;
+
+  @ApiPropertyOptional()
+  logo?: string;
+
+  @ApiPropertyOptional()
+  denomination?: string;
+
+  @ApiProperty()
+  createdAt: string;
+
+  @ApiPropertyOptional()
+  metadata?: string;
+
+  @ApiPropertyOptional()
+  archivedAt?: string;
+}

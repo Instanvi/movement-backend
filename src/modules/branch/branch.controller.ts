@@ -15,6 +15,13 @@ import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import {
+  ApiBaseResponse,
+  ApiArrayResponse,
+} from '../../core/swagger/responses.decorator';
+import {
+  BranchDto,
+} from './dto/branch.dto';
 
 @ApiTags('branch')
 @ApiChurchIdParam()
@@ -24,6 +31,7 @@ export class BranchController {
 
   @Post()
   @ApiOperation({ summary: 'Create branch' })
+  @ApiBaseResponse(BranchDto)
   async create(
     @Param('churchId') churchId: string,
     @Body() body: CreateBranchDto,
@@ -35,6 +43,7 @@ export class BranchController {
   @ApiOperation({ summary: 'List branches' })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
+  @ApiArrayResponse(BranchDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('limit') limit: number = 10,
@@ -46,6 +55,7 @@ export class BranchController {
   @Get(':id')
   @ApiUuidPathParam('id', 'Branch ID')
   @ApiOperation({ summary: 'Get branch by ID' })
+  @ApiBaseResponse(BranchDto)
   async get(@Param('id') id: string) {
     return await this.branchService.getById(id);
   }
@@ -53,6 +63,7 @@ export class BranchController {
   @Patch(':id')
   @ApiUuidPathParam('id', 'Branch ID')
   @ApiOperation({ summary: 'Update branch' })
+  @ApiBaseResponse(BranchDto)
   async update(
     @Param('id') id: string,
     @Body() body: Partial<CreateBranchDto>,

@@ -83,7 +83,7 @@ export class StreamingCallbackController {
     },
     examples: { default: { value: { name: 'obs-stream-key' } } },
   })
-  async onPublishDone(@Body() body: { name: string }) {
+  onPublishDone(@Body() body: { name: string }) {
     const streamKey = body.name;
     this.logger.log(`Stream ${streamKey} finished publishing.`);
     this.relayService.stopRelay(streamKey);

@@ -10,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { BatchService } from './batch.service';
-import { CreateBatchDto, DepositBatchDto, UpdateBatchDto } from './dto/batch.dto';
+import {
+  CreateBatchDto,
+  DepositBatchDto,
+  UpdateBatchDto,
+} from './dto/batch.dto';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
@@ -60,9 +64,14 @@ export class BatchController {
     name: 'filter',
     required: false,
     enum: BATCH_FILTERS,
-    description: 'open = not archived and status open; archived = archivedAt set',
+    description:
+      'open = not archived and status open; archived = archivedAt set',
   })
-  @ApiQuery({ name: 'search', required: false, description: 'Case-insensitive name match' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Case-insensitive name match',
+  })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: Number })
   async list(
@@ -78,9 +87,7 @@ export class BatchController {
         ? Math.min(500, Math.max(1, Number(limit)))
         : 100;
     const offsetNum =
-      offset != null && offset !== ''
-        ? Math.max(0, Number(offset))
-        : 0;
+      offset != null && offset !== '' ? Math.max(0, Number(offset)) : 0;
     return await this.batchService.getBatchOverview(churchId, {
       filter,
       search,
@@ -92,10 +99,7 @@ export class BatchController {
   @Get(':id')
   @ApiUuidPathParam('id', 'Batch ID')
   @ApiOperation({ summary: 'Get batch by ID' })
-  async getById(
-    @Param('churchId') churchId: string,
-    @Param('id') id: string,
-  ) {
+  async getById(@Param('churchId') churchId: string, @Param('id') id: string) {
     return await this.batchService.findOne(churchId, id);
   }
 
@@ -112,11 +116,7 @@ export class BatchController {
     @Param('id') id: string,
     @Body() body: DepositBatchDto,
   ) {
-    return await this.batchService.depositBatch(
-      churchId,
-      id,
-      body.accountId,
-    );
+    return await this.batchService.depositBatch(churchId, id, body.accountId);
   }
 
   @Post(':id/archive')
@@ -126,10 +126,7 @@ export class BatchController {
     description:
       'Sets archivedAt so the batch appears under Archived (no ledger transaction). Use POST …/deposit to record a bank deposit and close the batch.',
   })
-  async archive(
-    @Param('churchId') churchId: string,
-    @Param('id') id: string,
-  ) {
+  async archive(@Param('churchId') churchId: string, @Param('id') id: string) {
     return await this.batchService.archiveBatch(churchId, id);
   }
 
@@ -152,10 +149,7 @@ export class BatchController {
     description:
       'Only allowed when no donations reference this batch (donations would otherwise lose their batch link).',
   })
-  async delete(
-    @Param('churchId') churchId: string,
-    @Param('id') id: string,
-  ) {
+  async delete(@Param('churchId') churchId: string, @Param('id') id: string) {
     return await this.batchService.delete(churchId, id);
   }
 }

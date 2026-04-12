@@ -6,7 +6,7 @@ import {
   IsDate,
   IsObject,
 } from 'class-validator';
-import { OmitType } from '@nestjs/swagger';
+import { OmitType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateSubscriptionDto {
   @IsOptional()

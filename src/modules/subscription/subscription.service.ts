@@ -9,7 +9,7 @@ import {
 export class SubscriptionService {
   constructor(private readonly subscriptionRepo: SubscriptionRepository) {}
 
-  async create(data: CreateSubscriptionDto) {
+  async create(data: CreateSubscriptionDto & { churchId: string }) {
     return await this.subscriptionRepo.create({
       ...data,
       metadata: data.metadata || {},

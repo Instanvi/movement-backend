@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -39,6 +39,7 @@ export class CreateStreamPlatformDto {
   isEnabled?: boolean;
 }
 
+export class UpdateStreamStatusDto {
   @IsString()
   @IsNotEmpty()
   status: string; // 'offline', 'live'

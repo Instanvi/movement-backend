@@ -88,8 +88,7 @@ export class AddMemberToFamilyDto {
 }
 
 export class AssignHeadOfHouseDto {
-  @ApiProperty({
-    description:
+  @ApiProperty({ description: 'Member ID to assign as head of house' })
   @IsUUID()
   memberId: string;
 }

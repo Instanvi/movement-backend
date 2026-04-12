@@ -39,6 +39,7 @@ export class UpdateBatchDto extends PartialType(CreateBatchDto) {
   archived?: boolean;
 }
 
+export class DepositBatchDto {
   @IsUUID()
   accountId: string;
 }

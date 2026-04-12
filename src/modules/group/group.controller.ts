@@ -7,6 +7,7 @@ import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
+import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';

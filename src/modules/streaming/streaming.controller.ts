@@ -26,7 +26,9 @@ import {
 import {
   ApiBaseResponse,
   ApiArrayResponse,
+  ApiPaginatedResponse,
 } from '../../core/swagger/responses.decorator';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 import {
   StreamPlatformDto,
 } from './dto/streaming.dto';
@@ -55,12 +57,13 @@ export class StreamingController {
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List streaming platforms' })
   @ApiQuery({ name: 'branchId', required: false, schema: { format: 'uuid' } })
-  @ApiArrayResponse(StreamPlatformDto)
+  @ApiPaginatedResponse(StreamPlatformDto)
   async list(
     @Param('churchId') churchId: string,
     @Query('branchId') branchId?: string,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    return await this.streamingService.list(churchId, branchId);
+    return await this.streamingService.list(churchId, branchId, pagination);
   }
 
   @Patch('platforms/:id/status')

@@ -5,6 +5,7 @@ import { DonationRepository } from '../../domain/repositories/donation.repositor
 import { ProjectRepository } from '../../domain/repositories/project.repository';
 import { MessagingRepository } from '../../domain/repositories/messaging.repository';
 import { ReportRepository } from '../../domain/repositories/report.repository';
+import { createPaginationResult } from '../../core/utils/pagination.utils';
 
 @Injectable()
 export class ChurchService {
@@ -23,9 +24,13 @@ export class ChurchService {
 
   async getBranches(
     churchId: string,
-    pagination?: { limit: number; offset: number },
+    pagination: { limit: number; offset: number },
   ) {
-    return this.branchRepo.findByChurch(churchId, pagination);
+    const { items, total } = await this.branchRepo.findByChurch(
+      churchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 
   async getReport(churchId: string) {

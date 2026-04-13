@@ -3,7 +3,7 @@ import { BaseRepository } from './base.repository';
 import * as schema from '../../core/schema/member.schema';
 import { DB_CONNECTION } from '../../core/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and, SQL } from 'drizzle-orm';
+import { eq, and, SQL, sql } from 'drizzle-orm';
 
 const ROLE_PRIORITY: Record<string, number> = {
   overseer: 0,
@@ -28,12 +28,23 @@ export class MemberRepository implements BaseRepository<typeof schema.member> {
     return results[0];
   }
 
-  async findAll(where?: SQL, pagination?: { limit: number; offset: number }) {
-    let query = this.db.select().from(schema.member).$dynamic();
-    if (where) query = query.where(where);
-    if (pagination)
-      query = query.limit(pagination.limit).offset(pagination.offset);
-    return await query;
+  async findAll(where?: SQL, pagination?: { limit?: number; offset?: number }) {
+    const itemsQuery = this.db.select().from(schema.member).$dynamic();
+    if (where) itemsQuery.where(where);
+    if (pagination) {
+      if (pagination.limit) itemsQuery.limit(pagination.limit);
+      if (pagination.offset) itemsQuery.offset(pagination.offset);
+    }
+    const items = await itemsQuery;
+
+    const totalQuery = this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.member);
+    if (where) totalQuery.where(where);
+    const totalResult = await totalQuery;
+    const total = Number(totalResult[0]?.count ?? 0);
+
+    return { items, total };
   }
 
   async create(data: typeof schema.member.$inferInsert) {
@@ -57,8 +68,11 @@ export class MemberRepository implements BaseRepository<typeof schema.member> {
     await this.db.delete(schema.member).where(eq(schema.member.id, id));
   }
 
-  async findByChurch(churchId: string) {
-    return this.findAll(eq(schema.member.churchId, churchId));
+  async findByChurch(
+    churchId: string,
+    pagination?: { limit?: number; offset?: number },
+  ) {
+    return this.findAll(eq(schema.member.churchId, churchId), pagination);
   }
 
   async findByFamilyId(familyId: string) {

@@ -16,6 +16,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
 import { ChurchSettingModule } from './modules/church-setting/church-setting.module';
 import { CommunicationModule } from './modules/communication/communication.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
+import { DevotionalModule } from './modules/devotional/devotional.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -49,6 +50,7 @@ import { RolesGuard } from './core/guards/roles.guard';
     ChurchSettingModule,
     CommunicationModule,
     InvitationModule,
+    DevotionalModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

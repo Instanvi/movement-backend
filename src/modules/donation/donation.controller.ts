@@ -14,8 +14,10 @@ import {
 import {
   ApiBaseResponse,
   ApiArrayResponse,
+  ApiPaginatedResponse,
 } from '../../core/swagger/responses.decorator';
 import { DonationDto } from './dto/donation.dto';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 
 @ApiTags('donation')
 @ApiChurchRouteAuth()
@@ -48,28 +50,22 @@ export class DonationController {
   @Get()
   @Roles('admin', 'pastor')
   @ApiOperation({ summary: 'List donations for branch' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
-  @ApiArrayResponse(DonationDto)
+  @ApiPaginatedResponse(DonationDto)
   async list(
     @Param('branchId') branchId: string,
-    @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    return await this.donationService.listByBranch(branchId, { limit, offset });
+    return await this.donationService.listByBranch(branchId, pagination);
   }
 
   @Get('church-wide')
   @Roles('admin', 'overseer')
   @ApiOperation({ summary: 'List donations for church (all branches)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
-  @ApiArrayResponse(DonationDto)
+  @ApiPaginatedResponse(DonationDto)
   async listChurchWide(
     @Param('churchId') churchId: string,
-    @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    return await this.donationService.listByChurch(churchId, { limit, offset });
+    return await this.donationService.listByChurch(churchId, pagination);
   }
 }

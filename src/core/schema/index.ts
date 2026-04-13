@@ -19,3 +19,4 @@ export * from './batch.schema';
 export * from './calendar.schema';
 export * from './communication.schema';
 export * from './church_setting.schema';
+export * from './devotional.schema';

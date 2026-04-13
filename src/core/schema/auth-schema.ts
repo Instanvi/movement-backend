@@ -9,3 +9,4 @@ export * from './branch.schema';
 export * from './donation.schema';
 export * from './project.schema';
 export * from './messaging.schema';
+export * from './devotional.schema';

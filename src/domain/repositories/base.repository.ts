@@ -5,8 +5,8 @@ export interface BaseRepository<T extends AnyPgTable> {
   findOne(id: string): Promise<T['$inferSelect'] | undefined>;
   findAll(
     where?: SQL,
-    pagination?: { limit: number; offset: number },
-  ): Promise<T['$inferSelect'][]>;
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: T['$inferSelect'][]; total: number }>;
   create(data: T['$inferInsert']): Promise<T['$inferSelect']>;
   update(
     id: string,

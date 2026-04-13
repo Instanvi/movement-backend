@@ -23,7 +23,10 @@
     "drizzle:push": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio",
     "drizzle:introspect": "drizzle-kit introspect",
-    "drizzle:check": "drizzle-kit check"
+    "drizzle:check": "drizzle-kit check",
+    "db:generate": "npm run drizzle:generate",
+    "db:migrate": "npm run drizzle:migrate",
+    "db:push": "npm run drizzle:push"
   },
   "dependencies": {
     "@mguay/nestjs-better-auth": "^1.0.4",

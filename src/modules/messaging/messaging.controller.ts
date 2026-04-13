@@ -1,5 +1,17 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { AuthGuard } from '@mguay/nestjs-better-auth';
+import { RolesGuard } from '../../core/guards/roles.guard';
+import { Roles } from '../../core/decorators/roles.decorator';
+import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import { MessagingService } from './messaging.service';
 import { CreateMessagingDto, SendBulkMessagingDto } from './dto/messaging.dto';
 import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
@@ -10,8 +22,11 @@ import {
 import { MessagingDto } from './dto/messaging.dto';
 
 @ApiTags('messaging')
+@ApiChurchRouteAuth()
 @ApiChurchIdParam()
 @Controller('churches/:churchId/messagings')
+@UseGuards(AuthGuard, RolesGuard)
+@Roles('admin', 'pastor')
 export class MessagingController {
   constructor(private readonly messagingService: MessagingService) {}
 

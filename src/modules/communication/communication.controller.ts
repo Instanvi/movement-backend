@@ -5,8 +5,6 @@ import {
   Body,
   Param,
   UseGuards,
-  Request,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { CommunicationService } from './communication.service';
@@ -23,8 +21,8 @@ import {
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
-import type { AuthenticatedRequest } from '../../core/types/authenticated-request';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
+import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import {
   ApiChurchIdParam,
   ApiUuidPathParam,
@@ -91,14 +89,10 @@ export class CommunicationController {
   })
   @ApiBaseResponse(FormSubmissionDto)
   async submitForm(
-    @Request() req: AuthenticatedRequest,
+    @ActiveUser('id') userId: string,
     @Param('formId') formId: string,
     @Body() body: Record<string, unknown>,
   ) {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new UnauthorizedException('Missing authenticated user');
-    }
     return await this.commsService.submitForm(formId, userId, body);
   }
 

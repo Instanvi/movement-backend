@@ -6,8 +6,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { InvitationService } from './invitation.service';
@@ -19,12 +17,12 @@ import {
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
-import type { AuthenticatedRequest } from '../../core/types/authenticated-request';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import {
   ApiChurchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
+import { ActiveUser, ActiveUserEntity } from '../../core/decorators/active-user.decorator';
 
 @ApiTags('invitations')
 @ApiChurchRouteAuth()
@@ -40,15 +38,11 @@ export class InvitationController {
   @ApiBody({ type: SendInvitationDto })
   @ApiBaseResponse(InvitationDto)
   async send(
-    @Request() req: AuthenticatedRequest,
+    @ActiveUser() user: ActiveUserEntity,
     @Param('churchId') churchId: string,
     @Body() body: SendInvitationDto,
   ) {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new UnauthorizedException('Missing authenticated user');
-    }
-    return await this.invitationService.send(churchId, userId, body);
+    return await this.invitationService.send(churchId, user.id, body);
   }
 
   @Get()

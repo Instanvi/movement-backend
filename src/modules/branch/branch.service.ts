@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BranchRepository } from '../../domain/repositories/branch.repository';
 import { CreateBranchDto } from './dto/branch.dto';
+import { createPaginationResult } from '../../core/utils/pagination.utils';
 
 @Injectable()
 export class BranchService {
@@ -19,9 +20,13 @@ export class BranchService {
 
   async listByChurch(
     churchId: string,
-    pagination?: { limit: number; offset: number },
+    pagination: { limit: number; offset: number },
   ) {
-    return await this.branchRepo.findByChurch(churchId, pagination);
+    const { items, total } = await this.branchRepo.findByChurch(
+      churchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 
   async update(id: string, data: Partial<CreateBranchDto>) {

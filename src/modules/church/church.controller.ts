@@ -5,7 +5,9 @@ import { ApiUuidPathParam } from '../../core/swagger/path-params.decorators';
 import {
   ApiBaseResponse,
   ApiArrayResponse,
+  ApiPaginatedResponse,
 } from '../../core/swagger/responses.decorator';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 import { ChurchService } from './church.service';
 import { ChurchDto } from './dto/church.dto';
 import { BranchDto } from '../branch/dto/branch.dto';
@@ -32,15 +34,12 @@ export class ChurchController {
 
   @Get(':id/branches')
   @ApiOperation({ summary: 'List branches for a church' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'offset', required: false, type: Number })
-  @ApiArrayResponse(BranchDto)
+  @ApiPaginatedResponse(BranchDto)
   async listBranches(
     @Param('id') id: string,
-    @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
+    @Query() pagination: PaginationQueryDto,
   ) {
-    return this.churchService.getBranches(id, { limit, offset });
+    return this.churchService.getBranches(id, pagination);
   }
 
   @Get(':id/reports')

@@ -12,6 +12,7 @@ import {
   UpdateMemberStatusDto,
   UpdateMemberDto,
 } from './dto/member.dto';
+import { createPaginationResult } from '../../core/utils/pagination.utils';
 
 @Injectable()
 export class MemberService {
@@ -116,7 +117,14 @@ export class MemberService {
     return await this.memberRepo.update(id, { status: updateDto.status });
   }
 
-  async findByChurch(churchId: string) {
-    return await this.memberRepo.findByChurch(churchId);
+  async findByChurch(
+    churchId: string,
+    pagination: { limit: number; offset: number },
+  ) {
+    const { items, total } = await this.memberRepo.findByChurch(
+      churchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 }

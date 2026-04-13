@@ -4,6 +4,7 @@ import {
   CreateStreamPlatformDto,
   UpdateStreamStatusDto,
 } from './dto/streaming.dto';
+import { createPaginationResult } from '../../core/utils/pagination.utils';
 
 @Injectable()
 export class StreamingService {
@@ -28,8 +29,17 @@ export class StreamingService {
     return await this.streamingRepo.updateStatus(id, dto.status);
   }
 
-  async list(churchId: string, branchId?: string) {
-    return await this.streamingRepo.findByChurch(churchId, branchId);
+  async list(
+    churchId: string,
+    branchId: string | undefined,
+    pagination: { limit: number; offset: number },
+  ) {
+    const { items, total } = await this.streamingRepo.findByChurch(
+      churchId,
+      branchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 
   async delete(id: string) {

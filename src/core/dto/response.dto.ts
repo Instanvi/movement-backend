@@ -14,16 +14,27 @@ export class ApiResponseDto<T> {
   timestamp: string;
 }
 
+export class PaginationMetaDto {
+  @ApiProperty({ example: 100 })
+  totalItems: number;
+
+  @ApiProperty({ example: 10 })
+  itemCount: number;
+
+  @ApiProperty({ example: 10 })
+  itemsPerPage: number;
+
+  @ApiProperty({ example: 10 })
+  totalPages: number;
+
+  @ApiProperty({ example: 1 })
+  currentPage: number;
+}
+
 export class PaginatedDataDto<T> {
   @ApiProperty()
   items: T[];
 
-  @ApiProperty({ example: 100 })
-  total: number;
-
-  @ApiProperty({ example: 10 })
-  limit: number;
-
-  @ApiProperty({ example: 0 })
-  offset: number;
+  @ApiProperty()
+  meta: PaginationMetaDto;
 }

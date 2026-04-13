@@ -55,11 +55,20 @@ export class OnboardingService {
       churchId: church.id,
     });
 
+    // 1. Church-wide leadership record (Overseer)
+    await this.memberRepo.create({
+      userId,
+      churchId: church.id,
+      branchId: null, // Church-wide
+      role: 'overseer',
+    });
+
+    // 2. Branch-specific leadership record (Admin)
     await this.memberRepo.create({
       userId,
       churchId: church.id,
       branchId: hqBranch.id,
-      role: 'overseer',
+      role: 'admin',
     });
 
     const branchCount = await this.branchRepo.countByChurchId(church.id);

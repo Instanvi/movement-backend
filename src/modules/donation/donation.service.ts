@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DonationRepository } from '../../domain/repositories/donation.repository';
 import { CreateDonationDto } from './dto/donation.dto';
+import { createPaginationResult } from '../../core/utils/pagination.utils';
 
 @Injectable()
 export class DonationService {
@@ -23,15 +24,23 @@ export class DonationService {
 
   async listByBranch(
     branchId: string,
-    pagination?: { limit: number; offset: number },
+    pagination: { limit: number; offset: number },
   ) {
-    return await this.donationRepo.findByBranch(branchId, pagination);
+    const { items, total } = await this.donationRepo.findByBranch(
+      branchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 
   async listByChurch(
     churchId: string,
-    pagination?: { limit: number; offset: number },
+    pagination: { limit: number; offset: number },
   ) {
-    return await this.donationRepo.findByOrganization(churchId, pagination);
+    const { items, total } = await this.donationRepo.findByOrganization(
+      churchId,
+      pagination,
+    );
+    return createPaginationResult(items, total, pagination);
   }
 }

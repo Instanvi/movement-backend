@@ -7,8 +7,9 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { MemberService } from './member.service';
 import {
   CreateMemberDto,
@@ -34,6 +35,7 @@ import {
 import {
   MemberDto,
 } from './dto/member.dto';
+import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 
 @ApiTags('members')
 @ApiChurchRouteAuth()
@@ -70,9 +72,12 @@ export class MemberController {
 
   @Get()
   @ApiOperation({ summary: 'List members' })
-  @ApiArrayResponse(MemberDto)
-  async list(@Param('churchId') churchId: string) {
-    return await this.memberService.findByChurch(churchId);
+  @ApiPaginatedResponse(MemberDto)
+  async list(
+    @Param('churchId') churchId: string,
+    @Query() pagination: PaginationQueryDto,
+  ) {
+    return await this.memberService.findByChurch(churchId, pagination);
   }
 
   @Patch(':memberId/transfer')

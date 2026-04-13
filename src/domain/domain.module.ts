@@ -17,6 +17,7 @@ import { CalendarRepository } from './repositories/calendar.repository';
 import { ChurchSettingRepository } from './repositories/church-setting.repository';
 import { CommunicationRepository } from './repositories/communication.repository';
 import { InvitationRepository } from './repositories/invitation.repository';
+import { DevotionalRepository } from './repositories/devotional.repository';
 import { DbModule } from '../core/db.module';
 
 @Module({
@@ -40,6 +41,7 @@ import { DbModule } from '../core/db.module';
     ChurchSettingRepository,
     CommunicationRepository,
     InvitationRepository,
+    DevotionalRepository,
   ],
   exports: [
     ChurchRepository,
@@ -60,6 +62,7 @@ import { DbModule } from '../core/db.module';
     ChurchSettingRepository,
     CommunicationRepository,
     InvitationRepository,
+    DevotionalRepository,
   ],
 })
 export class DomainModule {}

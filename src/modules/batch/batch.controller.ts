@@ -21,17 +21,14 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import {
-  ApiChurchIdParam,
+  ApiBranchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
 import {
   ApiBaseResponse,
   ApiArrayResponse,
 } from '../../core/swagger/responses.decorator';
-import {
-  BatchDto,
-  BatchOverviewDto,
-} from './dto/batch.dto';
+import { BatchDto, BatchOverviewDto } from './dto/batch.dto';
 import { BatchListFilter } from '../../domain/repositories/batch.repository';
 
 const BATCH_FILTERS: BatchListFilter[] = ['all', 'open', 'archived'];
@@ -45,8 +42,8 @@ function parseBatchFilter(raw?: string): BatchListFilter {
 
 @ApiTags('batches')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/batches')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/batches')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles('admin', 'pastor')
 export class BatchController {
@@ -57,10 +54,10 @@ export class BatchController {
   @ApiBody({ type: CreateBatchDto })
   @ApiBaseResponse(BatchDto)
   async create(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateBatchDto,
   ) {
-    return await this.batchService.create(churchId, body);
+    return await this.batchService.create(branchId, body);
   }
 
   @Get()
@@ -85,7 +82,7 @@ export class BatchController {
   @ApiQuery({ name: 'offset', required: false, type: Number })
   @ApiBaseResponse(BatchOverviewDto)
   async list(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Query('filter') filterRaw?: string,
     @Query('search') search?: string,
     @Query('limit') limit?: string,
@@ -98,7 +95,7 @@ export class BatchController {
         : 100;
     const offsetNum =
       offset != null && offset !== '' ? Math.max(0, Number(offset)) : 0;
-    return await this.batchService.getBatchOverview(churchId, {
+    return await this.batchService.getBatchOverview(branchId, {
       filter,
       search,
       limit: limitNum,
@@ -110,8 +107,8 @@ export class BatchController {
   @ApiUuidPathParam('id', 'Batch ID')
   @ApiOperation({ summary: 'Get batch by ID' })
   @ApiBaseResponse(BatchDto)
-  async getById(@Param('churchId') churchId: string, @Param('id') id: string) {
-    return await this.batchService.findOne(churchId, id);
+  async getById(@Param('branchId') branchId: string, @Param('id') id: string) {
+    return await this.batchService.findOne(branchId, id);
   }
 
   @Post(':id/deposit')
@@ -123,11 +120,11 @@ export class BatchController {
   })
   @ApiBody({ type: DepositBatchDto })
   async deposit(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Param('id') id: string,
     @Body() body: DepositBatchDto,
   ) {
-    return await this.batchService.depositBatch(churchId, id, body.accountId);
+    return await this.batchService.depositBatch(branchId, id, body.accountId);
   }
 
   @Post(':id/archive')
@@ -137,8 +134,8 @@ export class BatchController {
     description:
       'Sets archivedAt so the batch appears under Archived (no ledger transaction). Use POST …/deposit to record a bank deposit and close the batch.',
   })
-  async archive(@Param('churchId') churchId: string, @Param('id') id: string) {
-    return await this.batchService.archiveBatch(churchId, id);
+  async archive(@Param('branchId') branchId: string, @Param('id') id: string) {
+    return await this.batchService.archiveBatch(branchId, id);
   }
 
   @Patch(':id')
@@ -146,11 +143,11 @@ export class BatchController {
   @ApiOperation({ summary: 'Update batch' })
   @ApiBody({ type: UpdateBatchDto })
   async update(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Param('id') id: string,
     @Body() body: UpdateBatchDto,
   ) {
-    return await this.batchService.update(churchId, id, body);
+    return await this.batchService.update(branchId, id, body);
   }
 
   @Delete(':id')
@@ -160,7 +157,7 @@ export class BatchController {
     description:
       'Only allowed when no donations reference this batch (donations would otherwise lose their batch link).',
   })
-  async delete(@Param('churchId') churchId: string, @Param('id') id: string) {
-    return await this.batchService.delete(churchId, id);
+  async delete(@Param('branchId') branchId: string, @Param('id') id: string) {
+    return await this.batchService.delete(branchId, id);
   }
 }

@@ -7,7 +7,7 @@ import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
-import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
+import { ApiBranchIdParam } from '../../core/swagger/path-params.decorators';
 import {
   ApiBaseResponse,
   ApiArrayResponse,
@@ -16,8 +16,8 @@ import { ProjectDto } from './dto/project.dto';
 
 @ApiTags('projects')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/projects')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/projects')
 @UseGuards(AuthGuard, RolesGuard)
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -28,10 +28,10 @@ export class ProjectController {
   @ApiBody({ type: CreateProjectDto })
   @ApiBaseResponse(ProjectDto)
   async create(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateProjectDto,
   ) {
-    return await this.projectService.create(churchId, body);
+    return await this.projectService.create(branchId, body);
   }
 
   @Get('active')

@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { CommunicationService } from './communication.service';
-import { CreateAnnouncementDto, CreateFormDto } from './dto/communication.dto';
 import {
-  AnnouncementDto,
+  CreateFormDto,
   FormDto,
   FormSubmissionDto,
 } from './dto/communication.dto';
@@ -24,59 +16,39 @@ import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import { ActiveUser } from '../../core/decorators/active-user.decorator';
 import {
-  ApiChurchIdParam,
+  ApiBranchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
 
-@ApiTags('communication')
+@ApiTags('forms')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/communications')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/forms')
 @UseGuards(AuthGuard, RolesGuard)
-export class CommunicationController {
+export class FormController {
   constructor(private readonly commsService: CommunicationService) {}
 
-  @Post('announcements')
-  @Roles('admin', 'pastor')
-  @ApiOperation({ summary: 'Create announcement' })
-  @ApiBody({ type: CreateAnnouncementDto })
-  @ApiBaseResponse(AnnouncementDto)
-  async createAnnouncement(
-    @Param('churchId') churchId: string,
-    @Body() body: CreateAnnouncementDto,
-  ) {
-    return await this.commsService.createAnnouncement(churchId, body);
-  }
-
-  @Get('announcements')
-  @Roles('admin', 'pastor', 'member')
-  @ApiOperation({ summary: 'List announcements' })
-  @ApiArrayResponse(AnnouncementDto)
-  async getAnnouncements(@Param('churchId') churchId: string) {
-    return await this.commsService.getAnnouncements(churchId);
-  }
-
-  @Post('forms')
+  @Post()
   @Roles('admin')
   @ApiOperation({ summary: 'Create form' })
   @ApiBody({ type: CreateFormDto })
   @ApiBaseResponse(FormDto)
   async createForm(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateFormDto,
   ) {
-    return await this.commsService.createForm(churchId, body);
+    return await this.commsService.createForm(branchId, body);
   }
 
-  @Get('forms')
+  @Get()
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List forms' })
   @ApiArrayResponse(FormDto)
-  async getForms(@Param('churchId') churchId: string) {
-    return await this.commsService.getForms(churchId);
+  async getForms(@Param('branchId') branchId: string) {
+    return await this.commsService.getForms(branchId);
   }
 
-  @Post('forms/:formId/submit')
+  @Post(':formId/submit')
   @Roles('member')
   @ApiUuidPathParam('formId', 'Form ID')
   @ApiOperation({ summary: 'Submit form' })
@@ -96,7 +68,7 @@ export class CommunicationController {
     return await this.commsService.submitForm(formId, userId, body);
   }
 
-  @Get('forms/:formId/responses')
+  @Get(':formId/responses')
   @Roles('admin', 'pastor')
   @ApiUuidPathParam('formId', 'Form ID')
   @ApiOperation({ summary: 'List form responses' })

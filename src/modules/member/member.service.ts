@@ -6,6 +6,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { MemberRepository } from '../../domain/repositories/member.repository';
 import { UserRepository } from '../../domain/repositories/user.repository';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import {
   CreateMemberDto,
   CreatePeopleBulkDto,
@@ -19,9 +20,23 @@ export class MemberService {
   constructor(
     private readonly memberRepo: MemberRepository,
     private readonly userRepo: UserRepository,
+    private readonly branchRepo: BranchRepository,
   ) {}
 
-  async createMemberWithUser(data: CreateMemberDto) {
+  private async resolveChurchId(branchId: string): Promise<string> {
+    const branch = await this.branchRepo.findOne(branchId);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch.churchId;
+  }
+
+  async createMemberForBranch(branchId: string, data: CreateMemberDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.createMemberWithUser({ ...data, churchId, branchId });
+  }
+
+  async createMemberWithUser(
+    data: CreateMemberDto & { churchId: string; branchId?: string },
+  ) {
     let user = await this.userRepo.findByEmail(data.email);
 
     if (!user) {
@@ -53,7 +68,11 @@ export class MemberService {
     });
   }
 
-  async createPeopleBulk(churchId: string, dto: CreatePeopleBulkDto) {
+  async createPeopleBulkForBranch(
+    branchId: string,
+    dto: CreatePeopleBulkDto,
+  ) {
+    const churchId = await this.resolveChurchId(branchId);
     const role = dto.defaultRole ?? 'member';
     const created: Awaited<ReturnType<MemberRepository['create']>>[] = [];
     const failed: { name: string; email?: string; reason: string }[] = [];
@@ -66,7 +85,7 @@ export class MemberService {
           name: person.name,
           email,
           churchId,
-          branchId: dto.branchId,
+          branchId,
           role,
           gender: person.gender,
           ageGroup: person.ageGroup,
@@ -117,9 +136,17 @@ export class MemberService {
     return await this.memberRepo.update(id, { status: updateDto.status });
   }
 
+  async findByBranch(
+    branchId: string,
+    pagination?: { limit?: number; offset?: number },
+  ) {
+    const { items, total } = await this.memberRepo.findByBranch(branchId, pagination);
+    return createPaginationResult(items, total, pagination);
+  }
+
   async findByChurch(
     churchId: string,
-    pagination: { limit: number; offset: number },
+    pagination?: { limit?: number; offset?: number },
   ) {
     const { items, total } = await this.memberRepo.findByChurch(
       churchId,

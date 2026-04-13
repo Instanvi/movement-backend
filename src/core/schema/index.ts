@@ -8,7 +8,6 @@ export * from './donation.schema';
 export * from './messaging.schema';
 export * from './group.schema';
 export * from './finance.schema';
-export * from './streaming.schema';
 export * from './account.schema';
 export * from './session.schema';
 export * from './verification.schema';

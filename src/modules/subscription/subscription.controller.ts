@@ -26,9 +26,7 @@ import {
   ApiBaseResponse,
   ApiArrayResponse,
 } from '../../core/swagger/responses.decorator';
-import {
-  SubscriptionDto,
-} from './dto/subscription.dto';
+import { SubscriptionDto } from './dto/subscription.dto';
 
 @ApiTags('subscriptions')
 @ApiChurchRouteAuth()

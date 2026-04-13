@@ -1,26 +1,18 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { GroupService } from './group.service';
-import { CreateGroupDto, AddMemberToGroupDto } from './dto/group.dto';
-import { UseGuards } from '@nestjs/common';
+import { CreateGroupDto, AddMemberToGroupDto, GroupDto, GroupMemberDto } from './dto/group.dto';
 import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
-import {
-  ApiChurchIdParam,
-  ApiUuidPathParam,
-} from '../../core/swagger/path-params.decorators';
-import {
-  ApiBaseResponse,
-  ApiArrayResponse,
-} from '../../core/swagger/responses.decorator';
-import { GroupDto, GroupMemberDto } from './dto/group.dto';
+import { ApiBranchIdParam, ApiUuidPathParam } from '../../core/swagger/path-params.decorators';
+import { ApiBaseResponse, ApiArrayResponse } from '../../core/swagger/responses.decorator';
 
 @ApiTags('groups')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/groups')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/groups')
 @UseGuards(AuthGuard, RolesGuard)
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
@@ -30,19 +22,16 @@ export class GroupController {
   @ApiOperation({ summary: 'Create group' })
   @ApiBody({ type: CreateGroupDto })
   @ApiBaseResponse(GroupDto)
-  async create(
-    @Param('churchId') churchId: string,
-    @Body() body: CreateGroupDto,
-  ) {
-    return await this.groupService.create(churchId, body);
+  async create(@Param('branchId') branchId: string, @Body() body: CreateGroupDto) {
+    return await this.groupService.createForBranch(branchId, body);
   }
 
   @Get()
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List groups' })
   @ApiArrayResponse(GroupDto)
-  async list(@Param('churchId') churchId: string) {
-    return await this.groupService.listByChurch(churchId);
+  async list(@Param('branchId') branchId: string) {
+    return await this.groupService.listByBranch(branchId);
   }
 
   @Post(':id/members')
@@ -60,10 +49,7 @@ export class GroupController {
   @ApiUuidPathParam('id', 'Group ID')
   @ApiUuidPathParam('memberId', 'Member ID')
   @ApiOperation({ summary: 'Remove member from group' })
-  async removeMember(
-    @Param('id') id: string,
-    @Param('memberId') memberId: string,
-  ) {
+  async removeMember(@Param('id') id: string, @Param('memberId') memberId: string) {
     return await this.groupService.removeMember(id, memberId);
   }
 

@@ -1,5 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
+import {
+  financialAccount,
+  financialCategory,
+  payee,
+  transaction,
+  fund,
+  stewardshipPledge,
+  pledgeCampaign,
+} from '../../core/schema/finance.schema';
 import * as schemaExports from '../../core/schema';
 import { DB_CONNECTION } from '../../core/db.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -22,38 +31,53 @@ import {
 
 export type AccountingAccountFilter = 'all' | 'asset' | 'liability';
 
+type FinancialAccountSelect = typeof financialAccount.$inferSelect;
+type FinancialAccountInsert = typeof financialAccount.$inferInsert;
+
 @Injectable()
 export class FinanceRepository implements BaseRepository<
-  typeof schemaExports.financialAccount
+  typeof financialAccount
 > {
   constructor(
     @Inject(DB_CONNECTION)
     private readonly db: NodePgDatabase<typeof schemaExports>,
   ) {}
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<FinancialAccountSelect | undefined> {
     const results = await this.db
       .select()
-      .from(schemaExports.financialAccount)
-      .where(eq(schemaExports.financialAccount.id, id))
+      .from(financialAccount)
+      .where(eq(financialAccount.id, id))
       .limit(1);
     return results[0];
   }
 
-  async findAll(where?: SQL, pagination?: { limit: number; offset: number }) {
-    let query = this.db
-      .select()
-      .from(schemaExports.financialAccount)
-      .$dynamic();
+  async findAll(
+    where?: SQL,
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: FinancialAccountSelect[]; total: number }> {
+    let query = this.db.select().from(financialAccount).$dynamic();
     if (where) query = query.where(where);
-    if (pagination)
-      query = query.limit(pagination.limit).offset(pagination.offset);
-    return await query;
+
+    if (pagination) {
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
+    }
+
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(financialAccount)
+        .where(where ?? sql`true`),
+    ]);
+
+    return { items: items as FinancialAccountSelect[], total: total ?? 0 };
   }
 
-  async create(data: typeof schemaExports.financialAccount.$inferInsert) {
+  async create(data: FinancialAccountInsert): Promise<FinancialAccountSelect> {
     const results = await this.db
-      .insert(schemaExports.financialAccount)
+      .insert(financialAccount)
       .values(data)
       .returning();
     return results[0];
@@ -61,26 +85,45 @@ export class FinanceRepository implements BaseRepository<
 
   async update(
     id: string,
-    data: Partial<typeof schemaExports.financialAccount.$inferInsert>,
-  ) {
+    data: Partial<FinancialAccountInsert>,
+  ): Promise<FinancialAccountSelect> {
     const results = await this.db
-      .update(schemaExports.financialAccount)
+      .update(financialAccount)
       .set(data)
-      .where(eq(schemaExports.financialAccount.id, id))
+      .where(eq(financialAccount.id, id))
       .returning();
     return results[0];
   }
 
-  async delete(id: string) {
-    await this.db
-      .delete(schemaExports.financialAccount)
-      .where(eq(schemaExports.financialAccount.id, id));
+  async delete(id: string): Promise<void> {
+    await this.db.delete(financialAccount).where(eq(financialAccount.id, id));
   }
 
-  async findByChurch(churchId: string) {
-    return await this.db.query.financialAccount.findMany({
-      where: eq(schemaExports.financialAccount.churchId, churchId),
-    });
+  async findByChurch(
+    churchId: string,
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: FinancialAccountSelect[]; total: number }> {
+    const filters = eq(financialAccount.churchId, churchId);
+    let query = this.db
+      .select()
+      .from(financialAccount)
+      .where(filters)
+      .$dynamic();
+
+    if (pagination) {
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
+    }
+
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(financialAccount)
+        .where(filters),
+    ]);
+
+    return { items: items as FinancialAccountSelect[], total: total ?? 0 };
   }
 
   async sumAccountBalanceForChurch(
@@ -89,14 +132,14 @@ export class FinanceRepository implements BaseRepository<
   ): Promise<string> {
     const [row] = await this.db
       .select({
-        s: sql<string>`coalesce(sum(${schemaExports.financialAccount.balance}), 0)::text`,
+        s: sql<string>`coalesce(sum(${financialAccount.balance}), 0)::text`,
       })
-      .from(schemaExports.financialAccount)
+      .from(financialAccount)
       .where(
         and(
-          eq(schemaExports.financialAccount.churchId, churchId),
-          isNull(schemaExports.financialAccount.archivedAt),
-          eq(schemaExports.financialAccount.type, type),
+          eq(financialAccount.churchId, churchId),
+          isNull(financialAccount.archivedAt),
+          eq(financialAccount.type, type),
         ),
       );
     return row?.s ?? '0';
@@ -108,12 +151,12 @@ export class FinanceRepository implements BaseRepository<
   ): Promise<number> {
     const [row] = await this.db
       .select({ n: sql<number>`count(*)::int` })
-      .from(schemaExports.financialAccount)
+      .from(financialAccount)
       .where(
         and(
-          eq(schemaExports.financialAccount.churchId, churchId),
-          isNull(schemaExports.financialAccount.archivedAt),
-          eq(schemaExports.financialAccount.type, type),
+          eq(financialAccount.churchId, churchId),
+          isNull(financialAccount.archivedAt),
+          eq(financialAccount.type, type),
         ),
       );
     return row?.n ?? 0;
@@ -122,11 +165,11 @@ export class FinanceRepository implements BaseRepository<
   async countCategoriesForChurch(churchId: string): Promise<number> {
     const [row] = await this.db
       .select({ n: sql<number>`count(*)::int` })
-      .from(schemaExports.financialCategory)
+      .from(financialCategory)
       .where(
         and(
-          eq(schemaExports.financialCategory.churchId, churchId),
-          isNull(schemaExports.financialCategory.archivedAt),
+          eq(financialCategory.churchId, churchId),
+          isNull(financialCategory.archivedAt),
         ),
       );
     return row?.n ?? 0;
@@ -135,13 +178,8 @@ export class FinanceRepository implements BaseRepository<
   async countPayeesForChurch(churchId: string): Promise<number> {
     const [row] = await this.db
       .select({ n: sql<number>`count(*)::int` })
-      .from(schemaExports.payee)
-      .where(
-        and(
-          eq(schemaExports.payee.churchId, churchId),
-          isNull(schemaExports.payee.archivedAt),
-        ),
-      );
+      .from(payee)
+      .where(and(eq(payee.churchId, churchId), isNull(payee.archivedAt)));
     return row?.n ?? 0;
   }
 
@@ -151,140 +189,121 @@ export class FinanceRepository implements BaseRepository<
   ) {
     const filter = opts?.filter ?? 'all';
     const parts: SQL[] = [
-      eq(schemaExports.financialAccount.churchId, churchId),
-      isNull(schemaExports.financialAccount.archivedAt),
-      inArray(schemaExports.financialAccount.type, ['asset', 'liability']),
+      eq(financialAccount.churchId, churchId),
+      isNull(financialAccount.archivedAt),
+      inArray(financialAccount.type, ['asset', 'liability']),
     ];
     if (filter === 'asset') {
-      parts.push(eq(schemaExports.financialAccount.type, 'asset'));
+      parts.push(eq(financialAccount.type, 'asset'));
     } else if (filter === 'liability') {
-      parts.push(eq(schemaExports.financialAccount.type, 'liability'));
+      parts.push(eq(financialAccount.type, 'liability'));
     }
     if (opts?.search?.trim()) {
       const safe = opts.search.trim().replace(/[%_\\]/g, '');
       if (safe.length > 0) {
-        parts.push(ilike(schemaExports.financialAccount.name, `%${safe}%`));
+        parts.push(ilike(financialAccount.name, `%${safe}%`));
       }
     }
     return await this.db
       .select({
-        id: schemaExports.financialAccount.id,
-        name: schemaExports.financialAccount.name,
-        code: schemaExports.financialAccount.code,
-        description: schemaExports.financialAccount.description,
-        type: schemaExports.financialAccount.type,
-        churchId: schemaExports.financialAccount.churchId,
-        branchId: schemaExports.financialAccount.branchId,
-        fundId: schemaExports.financialAccount.fundId,
-        balance: schemaExports.financialAccount.balance,
-        openingBalance: schemaExports.financialAccount.openingBalance,
-        openingDate: schemaExports.financialAccount.openingDate,
-        createdAt: schemaExports.financialAccount.createdAt,
-        updatedAt: schemaExports.financialAccount.updatedAt,
-        archivedAt: schemaExports.financialAccount.archivedAt,
-        fundName: schemaExports.fund.name,
+        id: financialAccount.id,
+        name: financialAccount.name,
+        code: financialAccount.code,
+        description: financialAccount.description,
+        type: financialAccount.type,
+        churchId: financialAccount.churchId,
+        branchId: financialAccount.branchId,
+        fundId: financialAccount.fundId,
+        balance: financialAccount.balance,
+        openingBalance: financialAccount.openingBalance,
+        openingDate: financialAccount.openingDate,
+        createdAt: financialAccount.createdAt,
+        updatedAt: financialAccount.updatedAt,
+        archivedAt: financialAccount.archivedAt,
+        fundName: fund.name,
       })
-      .from(schemaExports.financialAccount)
-      .leftJoin(
-        schemaExports.fund,
-        eq(schemaExports.financialAccount.fundId, schemaExports.fund.id),
-      )
+      .from(financialAccount)
+      .leftJoin(fund, eq(financialAccount.fundId, fund.id))
       .where(and(...parts))
-      .orderBy(asc(schemaExports.financialAccount.name));
+      .orderBy(asc(financialAccount.name));
   }
 
-  async createTransaction(data: typeof schemaExports.transaction.$inferInsert) {
-    const results = await this.db
-      .insert(schemaExports.transaction)
-      .values(data)
-      .returning();
-    return results[0];
+  async createTransaction(data: typeof transaction.$inferInsert) {
+    const [result] = await this.db.insert(transaction).values(data).returning();
+    return result;
   }
 
   async getTransactions(accountId: string) {
-    return await this.db.query.transaction.findMany({
-      where: eq(schemaExports.transaction.accountId, accountId),
-    });
+    return await this.db
+      .select()
+      .from(transaction)
+      .where(eq(transaction.accountId, accountId));
   }
 
   // Fund management
-  async createFund(data: typeof schemaExports.fund.$inferInsert) {
-    const results = await this.db
-      .insert(schemaExports.fund)
-      .values(data)
-      .returning();
-    return results[0];
+  async createFund(data: typeof fund.$inferInsert) {
+    const [result] = await this.db.insert(fund).values(data).returning();
+    return result;
   }
 
   async listFundsByChurch(churchId: string) {
-    return await this.db.query.fund.findMany({
-      where: eq(schemaExports.fund.churchId, churchId),
-    });
+    return await this.db.select().from(fund).where(eq(fund.churchId, churchId));
   }
 
   async findFundOne(id: string) {
-    return await this.db.query.fund.findFirst({
-      where: eq(schemaExports.fund.id, id),
-    });
+    const [result] = await this.db
+      .select()
+      .from(fund)
+      .where(eq(fund.id, id))
+      .limit(1);
+    return result;
   }
 
-  async updateFund(
-    id: string,
-    data: Partial<typeof schemaExports.fund.$inferInsert>,
-  ) {
-    const results = await this.db
-      .update(schemaExports.fund)
+  async updateFund(id: string, data: Partial<typeof fund.$inferInsert>) {
+    const [result] = await this.db
+      .update(fund)
       .set(data)
-      .where(eq(schemaExports.fund.id, id))
+      .where(eq(fund.id, id))
       .returning();
-    return results[0];
+    return result;
   }
 
   // Pledges
-  async createPledge(
-    data: typeof schemaExports.stewardshipPledge.$inferInsert,
-  ) {
-    const results = await this.db
-      .insert(schemaExports.stewardshipPledge)
+  async createPledge(data: typeof stewardshipPledge.$inferInsert) {
+    const [result] = await this.db
+      .insert(stewardshipPledge)
       .values(data)
       .returning();
-    return results[0];
+    return result;
   }
 
   async listPledgesByUser(userId: string) {
-    return await this.db.query.stewardshipPledge.findMany({
-      where: eq(schemaExports.stewardshipPledge.userId, userId),
-    });
+    return await this.db
+      .select()
+      .from(stewardshipPledge)
+      .where(eq(stewardshipPledge.userId, userId));
   }
 
-  async createPledgeCampaign(
-    data: typeof schemaExports.pledgeCampaign.$inferInsert,
-  ) {
-    const [row] = await this.db
-      .insert(schemaExports.pledgeCampaign)
-      .values(data)
-      .returning();
+  async createPledgeCampaign(data: typeof pledgeCampaign.$inferInsert) {
+    const [row] = await this.db.insert(pledgeCampaign).values(data).returning();
     return row;
   }
 
   async getChurchPledgeSummaryFromCampaignPledges(churchId: string) {
     const rows = await this.db
       .select({
-        totalPledged: sql<string>`coalesce(sum(${schemaExports.stewardshipPledge.targetAmount}), 0)`,
-        totalRaised: sql<string>`coalesce(sum(${schemaExports.stewardshipPledge.raisedAmount}), 0)`,
+        totalPledged: sql<string>`coalesce(sum(${stewardshipPledge.targetAmount}), 0)`,
+        totalRaised: sql<string>`coalesce(sum(${stewardshipPledge.raisedAmount}), 0)`,
       })
-      .from(schemaExports.stewardshipPledge)
+      .from(stewardshipPledge)
       .innerJoin(
-        schemaExports.pledgeCampaign,
-        eq(
-          schemaExports.stewardshipPledge.pledgeCampaignId,
-          schemaExports.pledgeCampaign.id,
-        ),
+        pledgeCampaign,
+        eq(stewardshipPledge.pledgeCampaignId, pledgeCampaign.id),
       )
       .where(
         and(
-          eq(schemaExports.pledgeCampaign.churchId, churchId),
-          isNull(schemaExports.pledgeCampaign.archivedAt),
+          eq(pledgeCampaign.churchId, churchId),
+          isNull(pledgeCampaign.archivedAt),
         ),
       );
     return rows[0];
@@ -298,34 +317,34 @@ export class FinanceRepository implements BaseRepository<
     const search = opts?.search?.trim();
 
     const parts: SQL[] = [
-      eq(schemaExports.pledgeCampaign.churchId, churchId),
-      isNull(schemaExports.pledgeCampaign.archivedAt),
+      eq(pledgeCampaign.churchId, churchId),
+      isNull(pledgeCampaign.archivedAt),
     ];
 
     if (search) {
       const safe = search.replace(/[%_\\]/g, '');
       if (safe.length > 0) {
-        parts.push(ilike(schemaExports.pledgeCampaign.name, `%${safe}%`));
+        parts.push(ilike(pledgeCampaign.name, `%${safe}%`));
       }
     }
 
     const now = new Date();
     if (filter === 'in_progress') {
-      parts.push(ne(schemaExports.pledgeCampaign.status, 'closed'));
+      parts.push(ne(pledgeCampaign.status, 'closed'));
       parts.push(
         or(
-          isNull(schemaExports.pledgeCampaign.endDate),
-          gte(schemaExports.pledgeCampaign.endDate, now),
+          isNull(pledgeCampaign.endDate),
+          gte(pledgeCampaign.endDate, now),
         ) as SQL,
       );
-      parts.push(lte(schemaExports.pledgeCampaign.startDate, now));
+      parts.push(lte(pledgeCampaign.startDate, now));
     } else if (filter === 'completed') {
       parts.push(
         or(
-          eq(schemaExports.pledgeCampaign.status, 'closed'),
+          eq(pledgeCampaign.status, 'closed'),
           and(
-            isNotNull(schemaExports.pledgeCampaign.endDate),
-            lt(schemaExports.pledgeCampaign.endDate, now),
+            isNotNull(pledgeCampaign.endDate),
+            lt(pledgeCampaign.endDate, now),
           ),
         ) as SQL,
       );
@@ -333,60 +352,54 @@ export class FinanceRepository implements BaseRepository<
 
     return await this.db
       .select({
-        id: schemaExports.pledgeCampaign.id,
-        churchId: schemaExports.pledgeCampaign.churchId,
-        fundId: schemaExports.pledgeCampaign.fundId,
-        name: schemaExports.pledgeCampaign.name,
-        startDate: schemaExports.pledgeCampaign.startDate,
-        endDate: schemaExports.pledgeCampaign.endDate,
-        status: schemaExports.pledgeCampaign.status,
-        createdAt: schemaExports.pledgeCampaign.createdAt,
-        updatedAt: schemaExports.pledgeCampaign.updatedAt,
-        fundName: schemaExports.fund.name,
-        totalPledged: sql<string>`coalesce(sum(${schemaExports.stewardshipPledge.targetAmount}), 0)`,
-        totalRaised: sql<string>`coalesce(sum(${schemaExports.stewardshipPledge.raisedAmount}), 0)`,
+        id: pledgeCampaign.id,
+        churchId: pledgeCampaign.churchId,
+        fundId: pledgeCampaign.fundId,
+        name: pledgeCampaign.name,
+        startDate: pledgeCampaign.startDate,
+        endDate: pledgeCampaign.endDate,
+        status: pledgeCampaign.status,
+        createdAt: pledgeCampaign.createdAt,
+        updatedAt: pledgeCampaign.updatedAt,
+        fundName: fund.name,
+        totalPledged: sql<string>`coalesce(sum(${stewardshipPledge.targetAmount}), 0)`,
+        totalRaised: sql<string>`coalesce(sum(${stewardshipPledge.raisedAmount}), 0)`,
       })
-      .from(schemaExports.pledgeCampaign)
-      .innerJoin(
-        schemaExports.fund,
-        eq(schemaExports.fund.id, schemaExports.pledgeCampaign.fundId),
-      )
+      .from(pledgeCampaign)
+      .innerJoin(fund, eq(fund.id, pledgeCampaign.fundId))
       .leftJoin(
-        schemaExports.stewardshipPledge,
-        eq(
-          schemaExports.stewardshipPledge.pledgeCampaignId,
-          schemaExports.pledgeCampaign.id,
-        ),
+        stewardshipPledge,
+        eq(stewardshipPledge.pledgeCampaignId, pledgeCampaign.id),
       )
       .where(and(...parts))
-      .groupBy(
-        schemaExports.pledgeCampaign.id,
-        schemaExports.fund.id,
-        schemaExports.fund.name,
-      );
+      .groupBy(pledgeCampaign.id, fund.id, fund.name);
   }
 
   async findPledgeCampaignById(id: string) {
-    return await this.db.query.pledgeCampaign.findFirst({
-      where: eq(schemaExports.pledgeCampaign.id, id),
-    });
+    const [result] = await this.db
+      .select()
+      .from(pledgeCampaign)
+      .where(eq(pledgeCampaign.id, id))
+      .limit(1);
+    return result;
   }
 
   async updatePledgeCampaign(
     id: string,
-    data: Partial<typeof schemaExports.pledgeCampaign.$inferInsert>,
+    data: Partial<typeof pledgeCampaign.$inferInsert>,
   ) {
     const [row] = await this.db
-      .update(schemaExports.pledgeCampaign)
+      .update(pledgeCampaign)
       .set(data)
-      .where(eq(schemaExports.pledgeCampaign.id, id))
+      .where(eq(pledgeCampaign.id, id))
       .returning();
     return row;
   }
 
   async listPledgesByCampaign(campaignId: string) {
-    return await this.db.query.stewardshipPledge.findMany({
-      where: eq(schemaExports.stewardshipPledge.pledgeCampaignId, campaignId),
-    });
+    return await this.db
+      .select()
+      .from(stewardshipPledge)
+      .where(eq(stewardshipPledge.pledgeCampaignId, campaignId));
   }
 }

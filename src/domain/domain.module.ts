@@ -8,7 +8,6 @@ import { MemberRepository } from './repositories/member.repository';
 import { ReportRepository } from './repositories/report.repository';
 import { GroupRepository } from './repositories/group.repository';
 import { FinanceRepository } from './repositories/finance.repository';
-import { StreamingRepository } from './repositories/streaming.repository';
 import { UserRepository } from './repositories/user.repository';
 import { SubscriptionRepository } from './repositories/subscription.repository';
 import { FamilyRepository } from './repositories/family.repository';
@@ -32,7 +31,6 @@ import { DbModule } from '../core/db.module';
     ReportRepository,
     GroupRepository,
     FinanceRepository,
-    StreamingRepository,
     UserRepository,
     SubscriptionRepository,
     FamilyRepository,
@@ -53,7 +51,6 @@ import { DbModule } from '../core/db.module';
     ReportRepository,
     GroupRepository,
     FinanceRepository,
-    StreamingRepository,
     UserRepository,
     SubscriptionRepository,
     FamilyRepository,

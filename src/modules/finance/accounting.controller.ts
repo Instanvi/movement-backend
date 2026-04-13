@@ -22,7 +22,7 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import {
-  ApiChurchIdParam,
+  ApiBranchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
 import {
@@ -32,16 +32,14 @@ import {
 
 @ApiTags('finance-accounting')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/finance/accounting')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/finance/accounting')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles('admin', 'pastor')
 export class AccountingController {
   constructor(private readonly financeService: FinanceService) {}
 
-  private static parseAccountingFilter(
-    raw?: string,
-  ): AccountingAccountFilter {
+  private static parseAccountingFilter(raw?: string): AccountingAccountFilter {
     if (raw === 'asset' || raw === 'liability') {
       return raw;
     }
@@ -53,10 +51,10 @@ export class AccountingController {
   @ApiBody({ type: CreateFinancialAccountDto })
   @ApiBaseResponse(FinancialAccountDto)
   async createAccount(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateFinancialAccountDto,
   ) {
-    return await this.financeService.createAccount(churchId, body);
+    return await this.financeService.createAccount(branchId, body);
   }
 
   @Get('accounts')
@@ -64,8 +62,8 @@ export class AccountingController {
     summary: 'List all ledger accounts',
   })
   @ApiArrayResponse(FinancialAccountDto)
-  async listAccounts(@Param('churchId') churchId: string) {
-    return await this.financeService.listAccountsByChurch(churchId);
+  async listAccounts(@Param('branchId') branchId: string) {
+    return await this.financeService.listAccountsByChurch(branchId);
   }
 
   @Get('overview')
@@ -86,11 +84,11 @@ export class AccountingController {
   })
   @ApiBaseResponse(AccountingOverviewDto)
   async accountingOverview(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Query('filter') filterRaw?: string,
     @Query('search') search?: string,
   ) {
-    return await this.financeService.getAccountingOverview(churchId, {
+    return await this.financeService.getAccountingOverview(branchId, {
       filter: AccountingController.parseAccountingFilter(filterRaw),
       search,
     });
@@ -102,15 +100,11 @@ export class AccountingController {
   @ApiBody({ type: CreateTransactionDto })
   @ApiBaseResponse(TransactionDto)
   async addTransaction(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Param('accountId') accountId: string,
     @Body() body: CreateTransactionDto,
   ) {
-    return await this.financeService.addTransaction(
-      churchId,
-      accountId,
-      body,
-    );
+    return await this.financeService.addTransaction(branchId, accountId, body);
   }
 
   @Get('accounts/:accountId/transactions')
@@ -118,9 +112,9 @@ export class AccountingController {
   @ApiOperation({ summary: 'List transactions for account' })
   @ApiArrayResponse(TransactionDto)
   async getTransactions(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Param('accountId') accountId: string,
   ) {
-    return await this.financeService.getTransactions(churchId, accountId);
+    return await this.financeService.getTransactions(branchId, accountId);
   }
 }

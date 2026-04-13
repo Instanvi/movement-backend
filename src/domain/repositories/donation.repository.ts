@@ -1,79 +1,85 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { BaseRepository } from './base.repository';
-import * as schema from '../../core/schema/donation.schema';
-import { DB_CONNECTION } from '../../core/db.provider';
+import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, SQL, sql } from 'drizzle-orm';
+import { eq, and, SQL, sql } from 'drizzle-orm';
+import { BaseRepository } from './base.repository';
+import { DB_CONNECTION } from '../../core/db.provider';
+import * as schema from '../../core/schema';
+import { donation } from '../../core/schema/donation.schema';
+
+type DonationSelect = typeof donation.$inferSelect;
+type DonationInsert = typeof donation.$inferInsert;
 
 @Injectable()
-export class DonationRepository implements BaseRepository<
-  typeof schema.donation
-> {
+export class DonationRepository implements BaseRepository<typeof donation> {
   constructor(
     @Inject(DB_CONNECTION)
-    private readonly db: NodePgDatabase<Record<string, never>>,
+    private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findOne(id: string) {
-    const results = await this.db
+  async findOne(id: string): Promise<DonationSelect | undefined> {
+    const [result] = await this.db
       .select()
-      .from(schema.donation)
-      .where(eq(schema.donation.id, id))
+      .from(donation)
+      .where(eq(donation.id, id))
       .limit(1);
-    return results[0];
+    return result;
   }
 
-  async findAll(where?: SQL, pagination?: { limit?: number; offset?: number }) {
-    const itemsQuery = this.db.select().from(schema.donation).$dynamic();
-    if (where) itemsQuery.where(where);
+  async findAll(
+    where?: SQL,
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: DonationSelect[]; total: number }> {
+    let query = this.db.select().from(donation).$dynamic();
+    if (where) query = query.where(where);
+
     if (pagination) {
-      if (pagination.limit) itemsQuery.limit(pagination.limit);
-      if (pagination.offset) itemsQuery.offset(pagination.offset);
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
-    const items = await itemsQuery;
 
-    const totalQuery = this.db
-      .select({ count: sql<number>`count(*)` })
-      .from(schema.donation);
-    if (where) totalQuery.where(where);
-    const totalResult = await totalQuery;
-    const total = Number(totalResult[0]?.count ?? 0);
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(donation)
+        .where(where ?? sql`true`),
+    ]);
 
-    return { items, total };
+    return { items: items as DonationSelect[], total: total ?? 0 };
   }
 
-  async create(data: typeof schema.donation.$inferInsert) {
-    const results = await this.db
-      .insert(schema.donation)
-      .values(data)
-      .returning();
-    return results[0];
+  async create(data: DonationInsert): Promise<DonationSelect> {
+    const [result] = await this.db.insert(donation).values(data).returning();
+    return result;
   }
 
-  async update(id: string, data: Partial<typeof schema.donation.$inferInsert>) {
-    const results = await this.db
-      .update(schema.donation)
+  async update(
+    id: string,
+    data: Partial<DonationInsert>,
+  ): Promise<DonationSelect> {
+    const [result] = await this.db
+      .update(donation)
       .set(data)
-      .where(eq(schema.donation.id, id))
+      .where(eq(donation.id, id))
       .returning();
-    return results[0];
+    return result;
   }
 
-  async delete(id: string) {
-    await this.db.delete(schema.donation).where(eq(schema.donation.id, id));
+  async delete(id: string): Promise<void> {
+    await this.db.delete(donation).where(eq(donation.id, id));
   }
 
   async findByBranch(
     branchId: string,
     pagination?: { limit?: number; offset?: number },
-  ) {
-    return this.findAll(eq(schema.donation.branchId, branchId), pagination);
+  ): Promise<{ items: DonationSelect[]; total: number }> {
+    return this.findAll(eq(donation.branchId, branchId), pagination);
   }
 
   async findByOrganization(
     churchId: string,
     pagination?: { limit?: number; offset?: number },
-  ) {
-    return this.findAll(eq(schema.donation.churchId, churchId), pagination);
+  ): Promise<{ items: DonationSelect[]; total: number }> {
+    return this.findAll(eq(donation.churchId, churchId), pagination);
   }
 }

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { FamilyRepository } from '../../domain/repositories/family.repository';
 import { MemberRepository } from '../../domain/repositories/member.repository';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import {
   CreateFamilyDto,
   UpdateFamilyDto,
@@ -18,7 +19,19 @@ export class FamilyService {
   constructor(
     private readonly familyRepo: FamilyRepository,
     private readonly memberRepo: MemberRepository,
+    private readonly branchRepo: BranchRepository,
   ) {}
+
+  private async resolveChurchId(branchId: string): Promise<string> {
+    const branch = await this.branchRepo.findOne(branchId);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch.churchId;
+  }
+
+  async createForBranch(branchId: string, dto: CreateFamilyDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.create(churchId, dto);
+  }
 
   async create(churchId: string, dto: CreateFamilyDto) {
     const { members = [], headOfHouseId, name, branchId } = dto;
@@ -38,19 +51,10 @@ export class FamilyService {
       );
     }
 
-    const fam = await this.familyRepo.create({
-      name,
-      branchId,
-      churchId,
-    });
+    const fam = await this.familyRepo.create({ name, branchId, churchId });
 
     for (const row of members) {
-      await this.linkMemberToFamily(
-        fam.id,
-        churchId,
-        row.memberId,
-        row.familyRole,
-      );
+      await this.linkMemberToFamily(fam.id, churchId, row.memberId, row.familyRole);
     }
 
     const explicitHead = headOfHouseId ?? hohRows[0]?.memberId;
@@ -62,12 +66,7 @@ export class FamilyService {
         );
       }
       if (headMember.familyId !== fam.id) {
-        await this.linkMemberToFamily(
-          fam.id,
-          churchId,
-          explicitHead,
-          'Head of House',
-        );
+        await this.linkMemberToFamily(fam.id, churchId, explicitHead, 'Head of House');
       }
       await this.assignHeadOfHouse(fam.id, churchId, explicitHead);
     }
@@ -75,11 +74,20 @@ export class FamilyService {
     return this.getProfile(fam.id, churchId);
   }
 
+  async findByBranch(
+    branchId: string,
+    pagination?: { limit?: number; offset?: number },
+  ) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.findByChurch(churchId, pagination);
+  }
+
   async findByChurch(
     churchId: string,
-    pagination?: { limit: number; offset: number },
+    pagination?: { limit?: number; offset?: number },
   ) {
-    return await this.familyRepo.findByChurch(churchId, pagination);
+    const { items, total } = await this.familyRepo.findByChurch(churchId, pagination);
+    return { items, total };
   }
 
   async findOne(id: string, churchId: string) {
@@ -90,24 +98,29 @@ export class FamilyService {
     return fam;
   }
 
+  async getProfileForBranch(familyId: string, branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.getProfile(familyId, churchId);
+  }
+
   async getProfile(familyId: string, churchId: string) {
     const fam = await this.findOne(familyId, churchId);
-    const members = await this.memberRepo.findByFamilyId(familyId);
-    const childrenCount = members.filter(
-      (m) => m.familyRole === 'Child',
-    ).length;
+    const { items: members } = await this.memberRepo.findByFamilyId(familyId);
+    const childrenCount = members.filter((m) => m.familyRole === 'Child').length;
     const headOfHouse = fam.headOfHouseId
       ? (members.find((m) => m.id === fam.headOfHouseId) ?? null)
       : null;
     return {
       ...fam,
       members,
-      stats: {
-        memberCount: members.length,
-        childrenCount,
-      },
+      stats: { memberCount: members.length, childrenCount },
       headOfHouse,
     };
+  }
+
+  async updateForBranch(id: string, branchId: string, dto: UpdateFamilyDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.update(id, churchId, dto);
   }
 
   async update(id: string, churchId: string, dto: UpdateFamilyDto) {
@@ -118,43 +131,43 @@ export class FamilyService {
     return this.getProfile(id, churchId);
   }
 
+  async deleteForBranch(id: string, branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.delete(id, churchId);
+  }
+
   async delete(id: string, churchId: string) {
     await this.findOne(id, churchId);
     await this.familyRepo.delete(id);
   }
 
-  async addMember(
-    familyId: string,
-    churchId: string,
-    dto: AddMemberToFamilyDto,
-  ) {
+  async addMemberForBranch(familyId: string, branchId: string, dto: AddMemberToFamilyDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.addMember(familyId, churchId, dto);
+  }
+
+  async addMember(familyId: string, churchId: string, dto: AddMemberToFamilyDto) {
     await this.findOne(familyId, churchId);
-    await this.linkMemberToFamily(
-      familyId,
-      churchId,
-      dto.memberId,
-      dto.familyRole,
-    );
+    await this.linkMemberToFamily(familyId, churchId, dto.memberId, dto.familyRole);
     if (dto.familyRole === 'Head of House') {
       return this.assignHeadOfHouse(familyId, churchId, dto.memberId);
     }
     return this.getProfile(familyId, churchId);
   }
 
-  async assignHeadOfHouse(
-    familyId: string,
-    churchId: string,
-    memberId: string,
-  ) {
+  async assignHeadOfHouseForBranch(familyId: string, branchId: string, memberId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.assignHeadOfHouse(familyId, churchId, memberId);
+  }
+
+  async assignHeadOfHouse(familyId: string, churchId: string, memberId: string) {
     const fam = await this.findOne(familyId, churchId);
     const member = await this.memberRepo.findOne(memberId);
     if (!member || member.churchId !== churchId) {
       throw new BadRequestException('Member not found in this church');
     }
     if (member.familyId !== familyId) {
-      throw new BadRequestException(
-        'Head of household must already belong to this family',
-      );
+      throw new BadRequestException('Head of household must already belong to this family');
     }
 
     const previousHeadId = fam.headOfHouseId;
@@ -171,18 +184,18 @@ export class FamilyService {
     return this.getProfile(familyId, churchId);
   }
 
+  async removeMemberForBranch(familyId: string, branchId: string, memberId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    return this.removeMember(familyId, churchId, memberId);
+  }
+
   async removeMember(familyId: string, churchId: string, memberId: string) {
     const fam = await this.findOne(familyId, churchId);
     const member = await this.memberRepo.findOne(memberId);
     if (!member || member.familyId !== familyId) {
-      throw new NotFoundException(
-        `Member with ID ${memberId} NOT found in this family`,
-      );
+      throw new NotFoundException(`Member with ID ${memberId} NOT found in this family`);
     }
-    await this.memberRepo.update(memberId, {
-      familyId: null,
-      familyRole: 'Other',
-    });
+    await this.memberRepo.update(memberId, { familyId: null, familyRole: 'Other' });
     if (fam.headOfHouseId === memberId) {
       await this.familyRepo.update(familyId, { headOfHouseId: null });
     }
@@ -197,14 +210,10 @@ export class FamilyService {
   ) {
     const member = await this.memberRepo.findOne(memberId);
     if (!member || member.churchId !== churchId) {
-      throw new BadRequestException(
-        `Member ${memberId} is not part of this church`,
-      );
+      throw new BadRequestException(`Member ${memberId} is not part of this church`);
     }
     if (member.familyId && member.familyId !== familyId) {
-      throw new ConflictException(
-        'Member already belongs to another family; remove them there first',
-      );
+      throw new ConflictException('Member already belongs to another family; remove them there first');
     }
     await this.memberRepo.update(memberId, { familyId, familyRole });
   }

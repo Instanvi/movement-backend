@@ -1,15 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import {
-  and,
-  desc,
-  eq,
-  ilike,
-  isNotNull,
-  isNull,
-  sql,
-  SQL,
-} from 'drizzle-orm';
+import { and, desc, eq, ilike, isNotNull, isNull, sql, SQL } from 'drizzle-orm';
 import { BaseRepository } from './base.repository';
 import { DB_CONNECTION } from '../../core/db.provider';
 import * as schema from '../../core/schema';
@@ -28,14 +19,10 @@ export class BatchRepository implements BaseRepository<typeof batch> {
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  private batchFilterParts(
-    churchId: string,
-    filter: BatchListFilter,
-  ): SQL[] {
+  private batchFilterParts(churchId: string, filter: BatchListFilter): SQL[] {
     const parts: SQL[] = [eq(batch.churchId, churchId)];
     if (filter === 'open') {
       parts.push(isNull(batch.archivedAt));
-      parts.push(eq(batch.status, 'open'));
     } else if (filter === 'archived') {
       parts.push(isNotNull(batch.archivedAt));
     }
@@ -49,34 +36,48 @@ export class BatchRepository implements BaseRepository<typeof batch> {
 
   async findByChurch(
     churchId: string,
-    pagination?: { limit: number; offset: number },
-  ): Promise<BatchSelect[]> {
-    const query = this.db
-      .select()
-      .from(batch)
-      .where(eq(batch.churchId, churchId));
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: BatchSelect[]; total: number }> {
+    const filters = eq(batch.churchId, churchId);
+    let query = this.db.select().from(batch).where(filters).$dynamic();
 
     if (pagination) {
-      const results = await query
-        .limit(pagination.limit)
-        .offset(pagination.offset);
-      return results as BatchSelect[];
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
 
-    const results = await query;
-    return results as BatchSelect[];
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(batch)
+        .where(filters),
+    ]);
+
+    return { items: items as BatchSelect[], total: total ?? 0 };
   }
 
   async findAll(
     where?: SQL,
-    pagination?: { limit: number; offset: number },
-  ): Promise<BatchSelect[]> {
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: BatchSelect[]; total: number }> {
     let query = this.db.select().from(batch).$dynamic();
     if (where) query = query.where(where);
+
     if (pagination) {
-      query = query.limit(pagination.limit).offset(pagination.offset);
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
-    return await query;
+
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(batch)
+        .where(where ?? sql`true`),
+    ]);
+
+    return { items: items as BatchSelect[], total: total ?? 0 };
   }
 
   async create(data: BatchInsert): Promise<BatchSelect> {
@@ -195,9 +196,7 @@ export class BatchRepository implements BaseRepository<typeof batch> {
         total: sql<string>`coalesce(sum(${donation.amount}), 0)::text`,
       })
       .from(donation)
-      .where(
-        and(eq(donation.batchId, batchId), isNull(donation.archivedAt)),
-      );
+      .where(and(eq(donation.batchId, batchId), isNull(donation.archivedAt)));
     return row?.total ?? '0';
   }
 

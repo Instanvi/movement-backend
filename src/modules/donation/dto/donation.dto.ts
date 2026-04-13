@@ -116,7 +116,9 @@ export class DonationDto {
   @ApiPropertyOptional()
   projectItemId?: string;
 
-  @ApiProperty({ enum: ['Cash', 'Check', 'Online', 'Bank Transfer', 'Card', 'Other'] })
+  @ApiProperty({
+    enum: ['Cash', 'Check', 'Online', 'Bank Transfer', 'Card', 'Other'],
+  })
   method: string;
 
   @ApiProperty()

@@ -8,6 +8,7 @@ import {
   BatchRepository,
 } from '../../domain/repositories/batch.repository';
 import { FinanceService } from '../finance/finance.service';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import { CreateBatchDto, UpdateBatchDto } from './dto/batch.dto';
 
 @Injectable()
@@ -15,9 +16,17 @@ export class BatchService {
   constructor(
     private readonly batchRepo: BatchRepository,
     private readonly financeService: FinanceService,
+    private readonly branchRepo: BranchRepository,
   ) {}
 
-  async create(churchId: string, dto: CreateBatchDto) {
+  private async resolveChurchId(branchId: string): Promise<string> {
+    const branch = await this.branchRepo.findOne(branchId);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch.churchId;
+  }
+
+  async create(branchId: string, dto: CreateBatchDto) {
+    const churchId = await this.resolveChurchId(branchId);
     const { batchDate, ...rest } = dto;
     return await this.batchRepo.create({
       ...rest,
@@ -27,7 +36,7 @@ export class BatchService {
   }
 
   async getBatchOverview(
-    churchId: string,
+    branchId: string,
     opts?: {
       filter?: BatchListFilter;
       search?: string;
@@ -35,6 +44,7 @@ export class BatchService {
       offset?: number;
     },
   ) {
+    const churchId = await this.resolveChurchId(branchId);
     const filter = opts?.filter ?? 'all';
     const limit = opts?.limit ?? 100;
     const offset = opts?.offset ?? 0;
@@ -75,11 +85,13 @@ export class BatchService {
     return b;
   }
 
-  async findOne(churchId: string, id: string) {
+  async findOne(branchId: string, id: string) {
+    const churchId = await this.resolveChurchId(branchId);
     return await this.assertBatchInChurch(churchId, id);
   }
 
-  async update(churchId: string, id: string, dto: UpdateBatchDto) {
+  async update(branchId: string, id: string, dto: UpdateBatchDto) {
+    const churchId = await this.resolveChurchId(branchId);
     await this.assertBatchInChurch(churchId, id);
     const { batchDate, archived, ...rest } = dto;
     const payload: Parameters<BatchRepository['update']>[1] = { ...rest };
@@ -92,7 +104,8 @@ export class BatchService {
     return await this.batchRepo.update(id, payload);
   }
 
-  async delete(churchId: string, id: string) {
+  async delete(branchId: string, id: string) {
+    const churchId = await this.resolveChurchId(branchId);
     await this.assertBatchInChurch(churchId, id);
     const donationCount = await this.batchRepo.countDonationsForBatch(id);
     if (donationCount > 0) {
@@ -104,7 +117,8 @@ export class BatchService {
   }
 
   /** Gracely “Archive” row action: hide from Open tab without posting a deposit. */
-  async archiveBatch(churchId: string, batchId: string) {
+  async archiveBatch(branchId: string, batchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     const batch = await this.assertBatchInChurch(churchId, batchId);
     if (batch.archivedAt != null) {
       throw new BadRequestException('Batch is already archived');
@@ -116,7 +130,8 @@ export class BatchService {
    * Gracely-style deposit: credit the chosen bank (asset) account for the batch
    * donation total, then close and archive the batch.
    */
-  async depositBatch(churchId: string, batchId: string, accountId: string) {
+  async depositBatch(branchId: string, batchId: string, accountId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     const batch = await this.assertBatchInChurch(churchId, batchId);
     if (batch.archivedAt != null) {
       throw new BadRequestException('Batch is already archived');
@@ -126,7 +141,7 @@ export class BatchService {
     }
     await this.financeService.assertFinancialAccountForDeposit(
       accountId,
-      churchId,
+      branchId,
     );
     const totalStr = await this.batchRepo.sumDonationAmountForBatch(batchId);
     const amount = parseFloat(totalStr);
@@ -134,7 +149,7 @@ export class BatchService {
       throw new BadRequestException('Invalid batch total');
     }
     const transaction = await this.financeService.addTransaction(
-      churchId,
+      branchId,
       accountId,
       {
         amount,
@@ -150,3 +165,4 @@ export class BatchService {
     return { batch: updated, transaction };
   }
 }
+

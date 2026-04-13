@@ -1,9 +1,13 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { BaseRepository } from './base.repository';
-import * as schema from '../../core/schema/member.schema';
-import { DB_CONNECTION } from '../../core/db.provider';
+import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, and, SQL, sql } from 'drizzle-orm';
+import { BaseRepository } from './base.repository';
+import { DB_CONNECTION } from '../../core/db.provider';
+import * as schema from '../../core/schema';
+import { member } from '../../core/schema/member.schema';
+
+type MemberSelect = typeof member.$inferSelect;
+type MemberInsert = typeof member.$inferInsert;
 
 const ROLE_PRIORITY: Record<string, number> = {
   overseer: 0,
@@ -13,23 +17,26 @@ const ROLE_PRIORITY: Record<string, number> = {
 };
 
 @Injectable()
-export class MemberRepository implements BaseRepository<typeof schema.member> {
+export class MemberRepository implements BaseRepository<typeof member> {
   constructor(
     @Inject(DB_CONNECTION)
-    private readonly db: NodePgDatabase<Record<string, never>>,
+    private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findOne(id: string) {
-    const results = await this.db
+  async findOne(id: string): Promise<MemberSelect | undefined> {
+    const [result] = await this.db
       .select()
-      .from(schema.member)
-      .where(eq(schema.member.id, id))
+      .from(member)
+      .where(eq(member.id, id))
       .limit(1);
-    return results[0];
+    return result;
   }
 
-  async findAll(where?: SQL, pagination?: { limit?: number; offset?: number }) {
-    const itemsQuery = this.db.select().from(schema.member).$dynamic();
+  async findAll(
+    where?: SQL,
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: MemberSelect[]; total: number }> {
+    const itemsQuery = this.db.select().from(member).$dynamic();
     if (where) itemsQuery.where(where);
     if (pagination) {
       if (pagination.limit) itemsQuery.limit(pagination.limit);
@@ -37,83 +44,77 @@ export class MemberRepository implements BaseRepository<typeof schema.member> {
     }
     const items = await itemsQuery;
 
-    const totalQuery = this.db
-      .select({ count: sql<number>`count(*)` })
-      .from(schema.member);
-    if (where) totalQuery.where(where);
-    const totalResult = await totalQuery;
-    const total = Number(totalResult[0]?.count ?? 0);
+    const [countResult] = await this.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(member)
+      .where(where ?? sql`true`);
 
-    return { items, total };
+    return { items: items as MemberSelect[], total: countResult?.count ?? 0 };
   }
 
-  async create(data: typeof schema.member.$inferInsert) {
-    const results = await this.db
-      .insert(schema.member)
-      .values(data)
-      .returning();
-    return results[0];
+  async create(data: MemberInsert): Promise<MemberSelect> {
+    const [result] = await this.db.insert(member).values(data).returning();
+    return result;
   }
 
-  async update(id: string, data: Partial<typeof schema.member.$inferInsert>) {
-    const results = await this.db
-      .update(schema.member)
+  async update(id: string, data: Partial<MemberInsert>): Promise<MemberSelect> {
+    const [result] = await this.db
+      .update(member)
       .set(data)
-      .where(eq(schema.member.id, id))
+      .where(eq(member.id, id))
       .returning();
-    return results[0];
+    return result;
   }
 
-  async delete(id: string) {
-    await this.db.delete(schema.member).where(eq(schema.member.id, id));
+  async delete(id: string): Promise<void> {
+    await this.db.delete(member).where(eq(member.id, id));
   }
 
   async findByChurch(
     churchId: string,
     pagination?: { limit?: number; offset?: number },
-  ) {
-    return this.findAll(eq(schema.member.churchId, churchId), pagination);
+  ): Promise<{ items: MemberSelect[]; total: number }> {
+    return this.findAll(eq(member.churchId, churchId), pagination);
   }
 
-  async findByFamilyId(familyId: string) {
-    return this.findAll(eq(schema.member.familyId, familyId));
+  async findByBranch(
+    branchId: string,
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: MemberSelect[]; total: number }> {
+    return this.findAll(eq(member.branchId, branchId), pagination);
   }
 
-  async findByUserInChurch(userId: string, churchId: string) {
+  async findByFamilyId(
+    familyId: string,
+  ): Promise<{ items: MemberSelect[]; total: number }> {
+    return this.findAll(eq(member.familyId, familyId));
+  }
+
+  async findByUserInChurch(
+    userId: string,
+    churchId: string,
+  ): Promise<MemberSelect | undefined> {
     return this.findMembershipForRoleCheck(userId, churchId, undefined);
   }
 
-  /**
-   * Resolves membership for authorization: prefers church-wide leadership (overseer, admin)
-   * when a branch is specified; otherwise picks the highest-priority role in the church.
-   */
   async findMembershipForRoleCheck(
     userId: string,
     churchId: string,
     branchId?: string,
-  ) {
+  ): Promise<MemberSelect | undefined> {
     const rows = await this.db
       .select()
-      .from(schema.member)
-      .where(
-        and(
-          eq(schema.member.userId, userId),
-          eq(schema.member.churchId, churchId),
-        ),
-      );
+      .from(member)
+      .where(and(eq(member.userId, userId), eq(member.churchId, churchId)));
 
-    if (rows.length === 0) {
-      return undefined;
-    }
+    if (rows.length === 0) return undefined;
 
-    const isChurchWide = (r: (typeof rows)[0]) =>
+    const isLeadership = (r: MemberSelect) =>
       r.role === 'overseer' || r.role === 'admin';
 
     if (branchId) {
-      const leadership = rows.find(isChurchWide);
-      if (leadership) {
-        return leadership;
-      }
+      const leader = rows.find(isLeadership);
+      if (leader) return leader;
       return rows.find((r) => r.branchId === branchId);
     }
 

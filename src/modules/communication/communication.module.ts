@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CommunicationService } from './communication.service';
-import { CommunicationController } from './communication.controller';
+import { AnnouncementController } from './announcement.controller';
+import { FormController } from './form.controller';
 import { DomainModule } from '../../domain/domain.module';
 
 @Module({
   imports: [DomainModule],
-  controllers: [CommunicationController],
+  controllers: [AnnouncementController, FormController],
   providers: [CommunicationService],
   exports: [CommunicationService],
 })

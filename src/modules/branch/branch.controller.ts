@@ -26,9 +26,7 @@ import {
   ApiPaginatedResponse,
 } from '../../core/swagger/responses.decorator';
 import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
-import {
-  BranchDto,
-} from './dto/branch.dto';
+import { BranchDto } from './dto/branch.dto';
 
 @ApiTags('branch')
 @ApiChurchRouteAuth()

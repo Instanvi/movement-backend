@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, SQL } from 'drizzle-orm';
+import { eq, SQL, sql } from 'drizzle-orm';
 import { BaseRepository } from './base.repository';
 import { DB_CONNECTION } from '../../core/db.provider';
 import * as schema from '../../core/schema';
@@ -26,34 +26,48 @@ export class FamilyRepository implements BaseRepository<typeof family> {
 
   async findByChurch(
     churchId: string,
-    pagination?: { limit: number; offset: number },
-  ): Promise<FamilySelect[]> {
-    const query = this.db
-      .select()
-      .from(family)
-      .where(eq(family.churchId, churchId));
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: FamilySelect[]; total: number }> {
+    const filters = eq(family.churchId, churchId);
+    let query = this.db.select().from(family).where(filters).$dynamic();
 
     if (pagination) {
-      const results = await query
-        .limit(pagination.limit)
-        .offset(pagination.offset);
-      return results as FamilySelect[];
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
 
-    const results = await query;
-    return results as FamilySelect[];
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(family)
+        .where(filters),
+    ]);
+
+    return { items: items as FamilySelect[], total: total ?? 0 };
   }
 
   async findAll(
     where?: SQL,
-    pagination?: { limit: number; offset: number },
-  ): Promise<FamilySelect[]> {
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: FamilySelect[]; total: number }> {
     let query = this.db.select().from(family).$dynamic();
     if (where) query = query.where(where);
+
     if (pagination) {
-      query = query.limit(pagination.limit).offset(pagination.offset);
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
-    return await query;
+
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(family)
+        .where(where ?? sql`true`),
+    ]);
+
+    return { items: items as FamilySelect[], total: total ?? 0 };
   }
 
   async create(data: FamilyInsert): Promise<FamilySelect> {

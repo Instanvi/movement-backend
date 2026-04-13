@@ -21,9 +21,7 @@ function resolveAppName(): string {
 }
 
 function resolveFrom(): string {
-  return (
-    process.env.RESEND_FROM?.trim() || 'Auth <onboarding@resend.dev>'
-  );
+  return process.env.RESEND_FROM?.trim() || 'Auth <onboarding@resend.dev>';
 }
 
 function greetingFromUser(user: {

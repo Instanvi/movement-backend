@@ -14,7 +14,7 @@ export const ActiveUser = createParamDecorator(
   },
 );
 
-export interface ActiveUserEntity {
+export class ActiveUserEntity {
   id: string;
   email: string;
   emailVerified: boolean;

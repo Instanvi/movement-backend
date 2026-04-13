@@ -1,5 +1,4 @@
 import { FinanceModule } from './modules/finance/finance.module';
-import { StreamingModule } from './modules/streaming/streaming.module';
 import { GroupModule } from './modules/group/group.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { ReportModule } from './modules/report/report.module';
@@ -36,7 +35,6 @@ import { RolesGuard } from './core/guards/roles.guard';
     FamilyModule,
     SubscriptionModule,
     FinanceModule,
-    StreamingModule,
     GroupModule,
     OnboardingModule,
     ReportModule,

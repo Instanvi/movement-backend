@@ -125,9 +125,12 @@ export const stewardshipPledge = pgTable('stewardship_pledge', {
   fundId: uuid('fund_id')
     .notNull()
     .references(() => fund.id, { onDelete: 'cascade' }),
-  pledgeCampaignId: uuid('pledge_campaign_id').references(() => pledgeCampaign.id, {
-    onDelete: 'set null',
-  }),
+  pledgeCampaignId: uuid('pledge_campaign_id').references(
+    () => pledgeCampaign.id,
+    {
+      onDelete: 'set null',
+    },
+  ),
   targetAmount: decimal('target_amount', { precision: 15, scale: 2 }).notNull(),
   raisedAmount: decimal('raised_amount', { precision: 15, scale: 2 })
     .default('0')

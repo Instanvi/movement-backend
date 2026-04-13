@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and, SQL } from 'drizzle-orm';
+import { eq, and, SQL, sql } from 'drizzle-orm';
 import { BaseRepository } from './base.repository';
 import { DB_CONNECTION } from '../../core/db.provider';
 import * as schema from '../../core/schema';
-import { subscription } from '../../core/schema';
+import { subscription } from '../../core/schema/subscription.schema';
+
+type SubscriptionSelect = typeof subscription.$inferSelect;
+type SubscriptionInsert = typeof subscription.$inferInsert;
 
 @Injectable()
 export class SubscriptionRepository implements BaseRepository<
@@ -15,9 +18,7 @@ export class SubscriptionRepository implements BaseRepository<
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findOne(
-    id: string,
-  ): Promise<typeof subscription.$inferSelect | undefined> {
+  async findOne(id: string): Promise<SubscriptionSelect | undefined> {
     const [result] = await this.db
       .select()
       .from(subscription)
@@ -25,9 +26,7 @@ export class SubscriptionRepository implements BaseRepository<
     return result;
   }
 
-  async findByChurchId(
-    churchId: string,
-  ): Promise<(typeof subscription.$inferSelect)[]> {
+  async findByChurchId(churchId: string): Promise<SubscriptionSelect[]> {
     return await this.db
       .select()
       .from(subscription)
@@ -36,7 +35,7 @@ export class SubscriptionRepository implements BaseRepository<
 
   async findActiveByChurchId(
     churchId: string,
-  ): Promise<typeof subscription.$inferSelect | undefined> {
+  ): Promise<SubscriptionSelect | undefined> {
     const [result] = await this.db
       .select()
       .from(subscription)
@@ -51,19 +50,28 @@ export class SubscriptionRepository implements BaseRepository<
 
   async findAll(
     where?: SQL,
-    pagination?: { limit: number; offset: number },
-  ): Promise<(typeof subscription.$inferSelect)[]> {
+    pagination?: { limit?: number; offset?: number },
+  ): Promise<{ items: SubscriptionSelect[]; total: number }> {
     let query = this.db.select().from(subscription).$dynamic();
     if (where) query = query.where(where);
+
     if (pagination) {
-      query = query.limit(pagination.limit).offset(pagination.offset);
+      if (pagination.limit != null) query = query.limit(pagination.limit);
+      if (pagination.offset != null) query = query.offset(pagination.offset);
     }
-    return await query;
+
+    const [items, [{ total }]] = await Promise.all([
+      query,
+      this.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(subscription)
+        .where(where ?? sql`true`),
+    ]);
+
+    return { items: items as SubscriptionSelect[], total: total ?? 0 };
   }
 
-  async create(
-    data: typeof subscription.$inferInsert,
-  ): Promise<typeof subscription.$inferSelect> {
+  async create(data: SubscriptionInsert): Promise<SubscriptionSelect> {
     const [result] = await this.db
       .insert(subscription)
       .values(data)
@@ -73,8 +81,8 @@ export class SubscriptionRepository implements BaseRepository<
 
   async update(
     id: string,
-    data: Partial<typeof subscription.$inferInsert>,
-  ): Promise<typeof subscription.$inferSelect> {
+    data: Partial<SubscriptionInsert>,
+  ): Promise<SubscriptionSelect> {
     const [result] = await this.db
       .update(subscription)
       .set(data)
@@ -85,8 +93,8 @@ export class SubscriptionRepository implements BaseRepository<
 
   async updateByStripeId(
     stripeSubscriptionId: string,
-    data: Partial<typeof subscription.$inferInsert>,
-  ): Promise<typeof subscription.$inferSelect> {
+    data: Partial<SubscriptionInsert>,
+  ): Promise<SubscriptionSelect> {
     const [result] = await this.db
       .update(subscription)
       .set(data)

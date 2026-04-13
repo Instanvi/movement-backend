@@ -1,30 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommunicationRepository } from '../../domain/repositories/communication.repository';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import { CreateAnnouncementDto, CreateFormDto } from './dto/communication.dto';
 
 @Injectable()
 export class CommunicationService {
-  constructor(private readonly commsRepo: CommunicationRepository) {}
+  constructor(
+    private readonly commsRepo: CommunicationRepository,
+    private readonly branchRepo: BranchRepository,
+  ) {}
 
-  async createAnnouncement(churchId: string, data: CreateAnnouncementDto) {
-    return await this.commsRepo.createAnnouncement({
-      ...data,
-      churchId,
-    });
+  private async resolveChurchId(branchId: string): Promise<string> {
+    const branch = await this.branchRepo.findOne(branchId);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch.churchId;
   }
 
-  async getAnnouncements(churchId: string) {
+  async createAnnouncement(branchId: string, data: CreateAnnouncementDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return await this.commsRepo.createAnnouncement({ ...data, churchId });
+  }
+
+  async getAnnouncements(branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     return await this.commsRepo.findAnnouncements(churchId);
   }
 
-  async createForm(churchId: string, data: CreateFormDto) {
-    return await this.commsRepo.createForm({
-      ...data,
-      churchId,
-    });
+  async createForm(branchId: string, data: CreateFormDto) {
+    const churchId = await this.resolveChurchId(branchId);
+    return await this.commsRepo.createForm({ ...data, churchId });
   }
 
-  async getForms(churchId: string) {
+  async getForms(branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     return await this.commsRepo.findForms(churchId);
   }
 

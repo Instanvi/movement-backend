@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
-import { ApiChurchIdParam } from '../../core/swagger/path-params.decorators';
+import { ApiBranchIdParam } from '../../core/swagger/path-params.decorators';
 import { CalendarService } from './calendar.service';
 import {
   CreateRoomDto,
@@ -21,8 +21,8 @@ import { Roles } from '../../core/decorators/roles.decorator';
 
 @ApiTags('calendar')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/calendar')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/calendar')
 @UseGuards(AuthGuard, RolesGuard)
 export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
@@ -33,18 +33,18 @@ export class CalendarController {
   @ApiBody({ type: CreateRoomDto })
   @ApiBaseResponse(RoomDto)
   async createRoom(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateRoomDto,
   ) {
-    return await this.calendarService.createRoom(churchId, body);
+    return await this.calendarService.createRoom(branchId, body);
   }
 
   @Get('rooms')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List rooms' })
   @ApiArrayResponse(RoomDto)
-  async getRooms(@Param('churchId') churchId: string) {
-    return await this.calendarService.getRooms(churchId);
+  async getRooms(@Param('branchId') branchId: string) {
+    return await this.calendarService.getRooms(branchId);
   }
 
   @Post('event-types')
@@ -53,18 +53,18 @@ export class CalendarController {
   @ApiBody({ type: CreateAppointmentTypeDto })
   @ApiBaseResponse(AppointmentTypeDto)
   async createAppointmentType(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateAppointmentTypeDto,
   ) {
-    return await this.calendarService.createAppointmentType(churchId, body);
+    return await this.calendarService.createAppointmentType(branchId, body);
   }
 
   @Get('event-types')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List appointment types' })
   @ApiArrayResponse(AppointmentTypeDto)
-  async getAppointmentTypes(@Param('churchId') churchId: string) {
-    return await this.calendarService.getAppointmentTypes(churchId);
+  async getAppointmentTypes(@Param('branchId') branchId: string) {
+    return await this.calendarService.getAppointmentTypes(branchId);
   }
 
   @Post('events')
@@ -73,17 +73,17 @@ export class CalendarController {
   @ApiBody({ type: CreateEventDto })
   @ApiBaseResponse(EventDto)
   async createEvent(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateEventDto,
   ) {
-    return await this.calendarService.createEvent(churchId, body);
+    return await this.calendarService.createEvent(branchId, body);
   }
 
   @Get('events')
   @Roles('admin', 'pastor', 'member')
   @ApiOperation({ summary: 'List events' })
   @ApiArrayResponse(EventDto)
-  async getEvents(@Param('churchId') churchId: string) {
-    return await this.calendarService.getEvents(churchId);
+  async getEvents(@Param('branchId') branchId: string) {
+    return await this.calendarService.getEvents(branchId);
   }
 }

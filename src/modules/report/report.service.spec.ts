@@ -9,10 +9,19 @@ describe('ReportService', () => {
     const reportRepo = {
       getOrganizationOverview,
     } as unknown as ReportRepository;
-    const service = new ReportService(reportRepo);
+    
+    // Mock the branch repo returning our churchId
+    const findOneBranch = jest.fn().mockResolvedValue({ churchId: 'church-1' });
+    const branchRepo = {
+      findOne: findOneBranch,
+    } as any;
+    
+    const service = new ReportService(reportRepo, branchRepo);
 
-    const result = await service.getOverview('church-1');
+    // Call with branch-1 now
+    const result = await service.getOverview('branch-1');
 
+    expect(findOneBranch).toHaveBeenCalledWith('branch-1');
     expect(getOrganizationOverview).toHaveBeenCalledWith('church-1');
     expect(result).toEqual({ branchPerformance: [] });
   });

@@ -6,7 +6,9 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, and, SQL, sql, desc } from 'drizzle-orm';
 
 @Injectable()
-export class DevotionalRepository implements BaseRepository<typeof schema.devotional> {
+export class DevotionalRepository implements BaseRepository<
+  typeof schema.devotional
+> {
   constructor(
     @Inject(DB_CONNECTION)
     private readonly db: NodePgDatabase<Record<string, never>>,
@@ -32,7 +34,7 @@ export class DevotionalRepository implements BaseRepository<typeof schema.devoti
       desc(schema.devotional.publishDate),
       desc(schema.devotional.timeOfDay),
     );
-    
+
     const items = await itemsQuery;
 
     const totalQuery = this.db
@@ -53,7 +55,10 @@ export class DevotionalRepository implements BaseRepository<typeof schema.devoti
     return results[0];
   }
 
-  async update(id: string, data: Partial<typeof schema.devotional.$inferInsert>) {
+  async update(
+    id: string,
+    data: Partial<typeof schema.devotional.$inferInsert>,
+  ) {
     const results = await this.db
       .update(schema.devotional)
       .set(data)

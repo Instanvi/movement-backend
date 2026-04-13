@@ -8,11 +8,13 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { MemberRepository } from '../../domain/repositories/member.repository';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import type { AuthenticatedRequest } from '../types/authenticated-request';
 
-function getBranchIdFromRequest(
-  request: AuthenticatedRequest,
-): string | undefined {
+/**
+ * Extracts branchId from route params, query, or body.
+ */
+function extractBranchId(request: AuthenticatedRequest): string | undefined {
   const p = request.params as Record<string, string | undefined>;
   const q = request.query as Record<string, string | string[] | undefined>;
   const fromParam = p['branchId'];
@@ -25,11 +27,22 @@ function getBranchIdFromRequest(
   return fromParam ?? fromQuery ?? fromBody;
 }
 
+/**
+ * Extracts churchId from route params or query (for church-scoped routes like settings/subscriptions).
+ */
+function extractChurchId(request: AuthenticatedRequest): string | undefined {
+  const p = request.params as Record<string, string | undefined>;
+  const q = request.query as Record<string, string | string[] | undefined>;
+  const raw = p['churchId'] ?? p['id'] ?? q['churchId'];
+  return typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
+}
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private memberRepo: MemberRepository,
+    private branchRepo: BranchRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -49,17 +62,21 @@ export class RolesGuard implements CanActivate {
       throw new UnauthorizedException('User not authenticated via Better Auth');
     }
 
-    const rawChurchId =
-      request.params['churchId'] ??
-      request.params['id'] ??
-      request.query['churchId'];
-    const churchId = Array.isArray(rawChurchId) ? rawChurchId[0] : rawChurchId;
+    // Determine churchId: either directly from route (church-scoped) or derived from branchId
+    let churchId = extractChurchId(request);
+    const branchId = extractBranchId(request);
+
+    if (!churchId && branchId) {
+      const branch = await this.branchRepo.findOne(branchId);
+      if (!branch) {
+        throw new ForbiddenException('Branch not found');
+      }
+      churchId = branch.churchId;
+    }
 
     if (!churchId || typeof churchId !== 'string') {
       throw new ForbiddenException('Church context missing for role check');
     }
-
-    const branchId = getBranchIdFromRequest(request);
 
     const member = await this.memberRepo.findMembershipForRoleCheck(
       user.id,

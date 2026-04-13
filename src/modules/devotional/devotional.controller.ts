@@ -21,7 +21,7 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import {
-  ApiChurchIdParam,
+  ApiBranchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
 import {
@@ -32,8 +32,8 @@ import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 
 @ApiTags('devotionals')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/devotionals')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/devotionals')
 @UseGuards(AuthGuard, RolesGuard)
 export class DevotionalController {
   constructor(private readonly devotionalService: DevotionalService) {}
@@ -43,20 +43,20 @@ export class DevotionalController {
   @ApiOperation({ summary: 'Create devotional' })
   @ApiBaseResponse(DevotionalDto)
   async create(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: CreateDevotionalDto,
   ) {
-    return await this.devotionalService.create(churchId, body);
+    return await this.devotionalService.create(branchId, body);
   }
 
   @Get()
   @ApiOperation({ summary: 'List devotionals' })
   @ApiPaginatedResponse(DevotionalDto)
   async list(
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Query() pagination: PaginationQueryDto,
   ) {
-    return await this.devotionalService.listByChurch(churchId, pagination);
+    return await this.devotionalService.listByChurch(branchId, pagination);
   }
 
   @Get(':id')

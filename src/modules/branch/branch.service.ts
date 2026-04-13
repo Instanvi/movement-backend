@@ -20,7 +20,7 @@ export class BranchService {
 
   async listByChurch(
     churchId: string,
-    pagination: { limit: number; offset: number },
+    pagination?: { limit?: number; offset?: number },
   ) {
     const { items, total } = await this.branchRepo.findByChurch(
       churchId,

@@ -19,15 +19,18 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import {
-  ApiChurchIdParam,
+  ApiBranchIdParam,
   ApiUuidPathParam,
 } from '../../core/swagger/path-params.decorators';
-import { ActiveUser, ActiveUserEntity } from '../../core/decorators/active-user.decorator';
+import {
+  ActiveUser,
+  ActiveUserEntity,
+} from '../../core/decorators/active-user.decorator';
 
 @ApiTags('invitations')
 @ApiChurchRouteAuth()
-@ApiChurchIdParam()
-@Controller('churches/:churchId/invitations')
+@ApiBranchIdParam()
+@Controller('branches/:branchId/invitations')
 @UseGuards(AuthGuard, RolesGuard)
 @Roles('admin', 'pastor')
 export class InvitationController {
@@ -39,17 +42,17 @@ export class InvitationController {
   @ApiBaseResponse(InvitationDto)
   async send(
     @ActiveUser() user: ActiveUserEntity,
-    @Param('churchId') churchId: string,
+    @Param('branchId') branchId: string,
     @Body() body: SendInvitationDto,
   ) {
-    return await this.invitationService.send(churchId, user.id, body);
+    return await this.invitationService.send(branchId, user.id, body);
   }
 
   @Get()
   @ApiOperation({ summary: 'List invitations' })
   @ApiArrayResponse(InvitationDto)
-  async list(@Param('churchId') churchId: string) {
-    return await this.invitationService.list(churchId);
+  async list(@Param('branchId') branchId: string) {
+    return await this.invitationService.list(branchId);
   }
 
   @Delete(':id')

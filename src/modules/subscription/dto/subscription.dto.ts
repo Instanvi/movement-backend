@@ -79,7 +79,18 @@ export class SubscriptionDto {
   @ApiPropertyOptional()
   stripePriceId?: string;
 
-  @ApiProperty({ enum: ['active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'trialing', 'unpaid', 'paused'] })
+  @ApiProperty({
+    enum: [
+      'active',
+      'canceled',
+      'incomplete',
+      'incomplete_expired',
+      'past_due',
+      'trialing',
+      'unpaid',
+      'paused',
+    ],
+  })
   status: string;
 
   @ApiProperty({ enum: ['free', 'standard', 'pro'] })

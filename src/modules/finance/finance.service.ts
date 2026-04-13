@@ -8,6 +8,7 @@ import {
   AccountingAccountFilter,
   FinanceRepository,
 } from '../../domain/repositories/finance.repository';
+import { BranchRepository } from '../../domain/repositories/branch.repository';
 import {
   CreateFinancialAccountDto,
   CreateTransactionDto,
@@ -19,9 +20,19 @@ import {
 
 @Injectable()
 export class FinanceService {
-  constructor(private readonly financeRepo: FinanceRepository) {}
+  constructor(
+    private readonly financeRepo: FinanceRepository,
+    private readonly branchRepo: BranchRepository,
+  ) {}
 
-  async createAccount(churchId: string, dto: CreateFinancialAccountDto) {
+  private async resolveChurchId(branchId: string): Promise<string> {
+    const branch = await this.branchRepo.findOne(branchId);
+    if (!branch) throw new NotFoundException('Branch not found');
+    return branch.churchId;
+  }
+
+  async createAccount(branchId: string, dto: CreateFinancialAccountDto) {
+    const churchId = await this.resolveChurchId(branchId);
     if (dto.fundId) {
       const fund = await this.financeRepo.findFundOne(dto.fundId);
       if (!fund || fund.churchId !== churchId) {
@@ -32,6 +43,7 @@ export class FinanceService {
     return await this.financeRepo.create({
       ...rest,
       churchId,
+      branchId,
       balance: '0',
       openingBalance: openingBalance.toString(),
       openingDate: new Date(openingDate),
@@ -45,7 +57,8 @@ export class FinanceService {
   }
 
   /** Target account for batch deposits (Gracely “Deposit to Account”): church asset, not archived. */
-  async assertFinancialAccountForDeposit(accountId: string, churchId: string) {
+  async assertFinancialAccountForDeposit(accountId: string, branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     const account = await this.getAccount(accountId);
     if (account.churchId !== churchId) {
       throw new BadRequestException(
@@ -64,10 +77,11 @@ export class FinanceService {
   }
 
   async addTransaction(
-    churchId: string,
+    branchId: string,
     accountId: string,
     dto: CreateTransactionDto,
   ) {
+    const churchId = await this.resolveChurchId(branchId);
     const account = await this.getAccount(accountId);
     if (account.churchId !== churchId) {
       throw new BadRequestException(
@@ -111,7 +125,8 @@ export class FinanceService {
     return transaction;
   }
 
-  async getTransactions(churchId: string, accountId: string) {
+  async getTransactions(branchId: string, accountId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     const account = await this.getAccount(accountId);
     if (account.churchId !== churchId) {
       throw new BadRequestException(
@@ -121,15 +136,18 @@ export class FinanceService {
     return await this.financeRepo.getTransactions(accountId);
   }
 
-  async listAccountsByChurch(churchId: string) {
-    return await this.financeRepo.findByChurch(churchId);
+  async listAccountsByChurch(branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    const { items } = await this.financeRepo.findByChurch(churchId);
+    return items.filter((a) => a.branchId === branchId || !a.branchId);
   }
 
   /** Gracely Accounting page: KPIs + account table (asset/liability, connected fund name). */
   async getAccountingOverview(
-    churchId: string,
+    branchId: string,
     opts?: { filter?: string; search?: string },
   ) {
+    const churchId = await this.resolveChurchId(branchId);
     const filter: AccountingAccountFilter =
       opts?.filter === 'asset' || opts?.filter === 'liability'
         ? opts.filter
@@ -143,7 +161,7 @@ export class FinanceService {
       payeeCount,
       accounts,
     ] = await Promise.all([
-      this.financeRepo.countAccountsByTypeForChurch(churchId, 'asset'),
+      this.financeRepo.countAccountsByTypeForChurch(churchId, 'asset'), // Could scope to branch as needed
       this.financeRepo.countAccountsByTypeForChurch(churchId, 'liability'),
       this.financeRepo.sumAccountBalanceForChurch(churchId, 'asset'),
       this.financeRepo.sumAccountBalanceForChurch(churchId, 'liability'),
@@ -156,6 +174,10 @@ export class FinanceService {
     ]);
     const assets = parseFloat(assetBalanceSum) || 0;
     const liabilities = parseFloat(liabilityBalanceSum) || 0;
+    
+    // Simple branch filter 
+    const branchAccounts = accounts.filter(a => a.branchId === branchId || !a.branchId);
+    
     return {
       summary: {
         totalBalance: assets - liabilities,
@@ -164,25 +186,30 @@ export class FinanceService {
         categoryCount,
         payeeCount,
       },
-      accounts,
+      accounts: branchAccounts,
     };
   }
 
   // Fund management
-  async createFund(churchId: string, dto: CreateFundDto) {
+  async createFund(branchId: string, dto: CreateFundDto) {
+    const churchId = await this.resolveChurchId(branchId);
     return await this.financeRepo.createFund({
       ...dto,
       churchId,
+      branchId,
       balance: '0',
       targetAmount: dto.targetAmount?.toString() || null,
     });
   }
 
-  async listFundsByChurch(churchId: string) {
-    return await this.financeRepo.listFundsByChurch(churchId);
+  async listFundsByChurch(branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    const funds = await this.financeRepo.listFundsByChurch(churchId);
+    return funds.filter((f) => f.branchId === branchId || !f.branchId);
   }
 
-  async createPledgeCampaign(churchId: string, dto: CreatePledgeCampaignDto) {
+  async createPledgeCampaign(branchId: string, dto: CreatePledgeCampaignDto) {
+    const churchId = await this.resolveChurchId(branchId);
     const fund = await this.financeRepo.findFundOne(dto.fundId);
     if (!fund || fund.churchId !== churchId) {
       throw new BadRequestException('Fund not found in this church');
@@ -202,9 +229,10 @@ export class FinanceService {
   }
 
   async getPledgeCampaignOverview(
-    churchId: string,
+    branchId: string,
     opts?: { filter?: string; search?: string },
   ) {
+    const churchId = await this.resolveChurchId(branchId);
     const filter =
       opts?.filter === 'in_progress' || opts?.filter === 'completed'
         ? opts.filter
@@ -264,10 +292,11 @@ export class FinanceService {
   }
 
   async updatePledgeCampaign(
-    churchId: string,
+    branchId: string,
     campaignId: string,
     dto: UpdatePledgeCampaignDto,
   ) {
+    const churchId = await this.resolveChurchId(branchId);
     const campaign = await this.financeRepo.findPledgeCampaignById(campaignId);
     if (!campaign || campaign.churchId !== churchId) {
       throw new NotFoundException('Pledge campaign not found');
@@ -287,7 +316,8 @@ export class FinanceService {
     return await this.financeRepo.updatePledgeCampaign(campaignId, patch);
   }
 
-  async listPledgesForCampaign(churchId: string, campaignId: string) {
+  async listPledgesForCampaign(branchId: string, campaignId: string) {
+    const churchId = await this.resolveChurchId(branchId);
     const campaign = await this.financeRepo.findPledgeCampaignById(campaignId);
     if (!campaign || campaign.churchId !== churchId) {
       throw new NotFoundException('Pledge campaign not found');
@@ -295,13 +325,16 @@ export class FinanceService {
     return await this.financeRepo.listPledgesByCampaign(campaignId);
   }
 
-  async createPledge(churchId: string, dto: CreateStewardshipPledgeDto) {
+  async createPledge(branchId: string, dto: CreateStewardshipPledgeDto) {
+    const churchId = await this.resolveChurchId(branchId);
     if (dto.pledgeCampaignId) {
       const campaign = await this.financeRepo.findPledgeCampaignById(
         dto.pledgeCampaignId,
       );
       if (!campaign || campaign.churchId !== churchId) {
-        throw new BadRequestException('Pledge campaign not found in this church');
+        throw new BadRequestException(
+          'Pledge campaign not found in this church',
+        );
       }
       if (campaign.fundId !== dto.fundId) {
         throw new BadRequestException(
@@ -320,8 +353,9 @@ export class FinanceService {
     });
   }
 
-  async getStats(churchId: string, branchId?: string) {
-    const accounts = await this.financeRepo.findByChurch(churchId);
+  async getStats(branchId: string) {
+    const churchId = await this.resolveChurchId(branchId);
+    const { items: accounts } = await this.financeRepo.findByChurch(churchId);
     const funds = await this.financeRepo.listFundsByChurch(churchId);
 
     // Filter by branch if provided

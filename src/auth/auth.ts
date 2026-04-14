@@ -14,6 +14,9 @@ export const auth = betterAuth({
   user: {
     additionalFields: betterAuthUserAdditionalFields,
   },
+  session: {
+    deferSessionRefresh: true,
+  },
   advanced: {
     database: {
       generateId: 'uuid',

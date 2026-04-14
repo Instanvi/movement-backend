@@ -63,6 +63,9 @@ export function createAppAuth(database: AppDatabase) {
       user: {
         additionalFields: betterAuthUserAdditionalFields,
       },
+      session: {
+        deferSessionRefresh: true,
+      },
       databaseHooks: {
         user: {
           create: {

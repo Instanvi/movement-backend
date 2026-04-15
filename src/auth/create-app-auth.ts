@@ -5,7 +5,7 @@ import { openAPI } from 'better-auth/plugins';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as appSchema from '../core/schema';
 import { betterAuthUserAdditionalFields } from './better-auth-user-fields';
-import { openApiSignupFieldsDocPlugin } from './openapi-signup-fields-plugin';
+
 import {
   sendPasswordResetEmailResend,
   sendVerificationEmailResend,
@@ -112,7 +112,7 @@ export function createAppAuth(database: AppDatabase) {
         sendOnSignIn: false,
         autoSignInAfterVerification: true,
       },
-      plugins: [openAPI(), openApiSignupFieldsDocPlugin()],
+      plugins: [openAPI()],
       advanced: {
         database: {
           generateId: 'uuid',

@@ -1,10 +1,3 @@
-/**
- * Transactional auth email delivery via Resend.
- *
- * Env: `RESEND_API_KEY` (required in production), `RESEND_FROM` (default
- * `Auth <onboarding@resend.dev>`), optional `RESEND_REPLY_TO`,
- * `AUTH_EMAIL_APP_NAME` (matches Better Auth `appName`), `AUTH_REQUIRE_EMAIL_VERIFICATION`.
- */
 import { Logger } from '@nestjs/common';
 import { Resend } from 'resend';
 import {
@@ -16,128 +9,165 @@ import {
 
 const log = new Logger('ResendAuthMail');
 
-function resolveAppName(): string {
-  return process.env.AUTH_EMAIL_APP_NAME?.trim() || 'auth-config';
-}
+const config = {
+  getApiKey: () => process.env.RESEND_API_KEY?.trim(),
+  getFromEmail: () =>
+    process.env.RESEND_FROM_EMAIL?.trim() || 'Auth <onboarding@resend.dev>',
+  getReplyTo: () => process.env.RESEND_REPLY_TO?.trim() || null,
+  getAppName: () => process.env.AUTH_EMAIL_APP_NAME?.trim() || 'auth-config',
+  getFrontendUrl: () => process.env.FRONTEND_URL?.trim() || null,
+  isProduction: () => process.env.NODE_ENV === 'production',
+};
 
-function resolveFrom(): string {
-  return process.env.RESEND_FROM?.trim() || 'Auth <onboarding@resend.dev>';
-}
-
-function greetingFromUser(user: {
-  name?: string | null;
-  firstName?: string | null;
-  email: string;
-}): string {
-  const first = user.firstName?.trim();
-  if (first) {
-    return first;
-  }
-  const n = user.name?.trim();
-  if (n) {
-    return n;
-  }
-  const local = user.email.split('@')[0];
-  return local || 'there';
-}
-
-function getResendApiKey(): string | undefined {
-  return process.env.RESEND_API_KEY?.trim() || undefined;
-}
+let resendClient: Resend | null = null;
 
 function getClient(): Resend | null {
-  const key = getResendApiKey();
-  return key ? new Resend(key) : null;
+  if (!resendClient && config.getApiKey()) {
+    resendClient = new Resend(config.getApiKey());
+  }
+  return resendClient;
 }
 
-function requireResendInProduction(): void {
-  if (process.env.NODE_ENV === 'production' && !getResendApiKey()) {
+function ensureClientAvailable(): void {
+  if (config.isProduction() && !config.getApiKey()) {
     throw new Error(
       'RESEND_API_KEY is required in production to send verification and password emails',
     );
   }
 }
 
-export async function sendVerificationEmailResend(params: {
-  user: { name?: string | null; email: string };
-  url: string;
-}): Promise<void> {
-  requireResendInProduction();
+// ============================================================================
+// Utilities
+// ============================================================================
+
+type User = { name?: string | null; firstName?: string | null; email: string };
+
+function getGreeting(user: User): string {
+  if (user.firstName?.trim()) return user.firstName.trim();
+  if (user.name?.trim()) return user.name.trim();
+  return user.email.split('@')[0] || 'there';
+}
+
+function transformUrl(originalUrl: string): string {
+  let urlObj: URL;
+  try {
+    urlObj = new URL(originalUrl);
+  } catch {
+    return originalUrl;
+  }
+
+  urlObj.pathname = urlObj.pathname.replace(/^\/api\/auth/, '');
+
+  const frontendUrl = config.getFrontendUrl();
+  if (frontendUrl) {
+    try {
+      const frontend = new URL(frontendUrl);
+      urlObj.protocol = frontend.protocol;
+      urlObj.host = frontend.host;
+    } catch {
+      // Ignore if frontendUrl is malformed
+    }
+  }
+
+  return urlObj.toString();
+}
+
+// ============================================================================
+// Generic Email Sender
+// ============================================================================
+
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+async function sendEmail(options: EmailOptions): Promise<void> {
   const client = getClient();
-  const appName = resolveAppName();
-  const greeting = greetingFromUser(params.user);
 
   if (!client) {
     log.warn(
-      `RESEND_API_KEY not set; not sending. Verification for ${params.user.email}: ${params.url}`,
+      `RESEND_API_KEY not set; skipping email to ${options.to}: ${options.subject}`,
     );
     return;
   }
 
-  const { data, error } = await client.emails.send({
-    from: resolveFrom(),
+  const sendOptions: Parameters<typeof client.emails.send>[0] = {
+    from: config.getFromEmail(),
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+  };
+
+  const replyTo = config.getReplyTo();
+  if (replyTo) {
+    sendOptions.replyTo = replyTo;
+  }
+
+  const { data, error } = await client.emails.send(sendOptions);
+
+  if (error) {
+    log.error(`Resend error: ${error.message}`);
+    throw new Error(error.message);
+  }
+
+  log.log(`Email sent (${data?.id || 'no id'})`);
+}
+
+export async function sendVerificationEmail(params: {
+  user: User;
+  url: string;
+}): Promise<void> {
+  ensureClientAvailable();
+
+  const greeting = getGreeting(params.user);
+  const finalUrl = transformUrl(params.url);
+  const appName = config.getAppName();
+
+  await sendEmail({
     to: params.user.email,
     subject: `Confirm your email — ${appName}`,
     html: verificationEmailHtml({
       appName,
       greetingName: greeting,
-      verificationUrl: params.url,
+      verificationUrl: finalUrl,
     }),
     text: verificationEmailText({
       appName,
       greetingName: greeting,
-      verificationUrl: params.url,
+      verificationUrl: finalUrl,
     }),
-    ...(process.env.RESEND_REPLY_TO?.trim()
-      ? { replyTo: process.env.RESEND_REPLY_TO.trim() }
-      : {}),
   });
-
-  if (error) {
-    log.error(`Resend verification error: ${error.message}`);
-    throw new Error(error.message);
-  }
-  log.log(`Verification email queued (${data?.id ?? 'no id'})`);
 }
 
-export async function sendPasswordResetEmailResend(params: {
-  user: { name?: string | null; email: string };
+export async function sendPasswordResetEmail(params: {
+  user: User;
   url: string;
 }): Promise<void> {
-  requireResendInProduction();
-  const client = getClient();
-  const appName = resolveAppName();
-  const greeting = greetingFromUser(params.user);
+  ensureClientAvailable();
 
-  if (!client) {
-    log.warn(
-      `RESEND_API_KEY not set; not sending. Password reset for ${params.user.email}: ${params.url}`,
-    );
-    return;
-  }
+  const greeting = getGreeting(params.user);
+  const finalUrl = transformUrl(params.url);
+  const appName = config.getAppName();
 
-  const { data, error } = await client.emails.send({
-    from: resolveFrom(),
+  await sendEmail({
     to: params.user.email,
     subject: `Reset your password — ${appName}`,
     html: passwordResetEmailHtml({
       appName,
       greetingName: greeting,
-      resetUrl: params.url,
+      resetUrl: finalUrl,
     }),
     text: passwordResetEmailText({
       appName,
       greetingName: greeting,
-      resetUrl: params.url,
+      resetUrl: finalUrl,
     }),
-    ...(process.env.RESEND_REPLY_TO?.trim()
-      ? { replyTo: process.env.RESEND_REPLY_TO.trim() }
-      : {}),
   });
-
-  if (error) {
-    log.error(`Resend password reset error: ${error.message}`);
-    throw new Error(error.message);
-  }
-  log.log(`Password reset email queued (${data?.id ?? 'no id'})`);
 }
+
+// Backward compatibility
+export const sendVerificationEmailResend = sendVerificationEmail;
+export const sendPasswordResetEmailResend = sendPasswordResetEmail;

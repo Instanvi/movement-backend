@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import {
   pgTable,
   text,
@@ -47,6 +48,7 @@ export const subscription = pgTable('subscription', {
   cancelAt: timestamp('cancel_at'),
   canceledAt: timestamp('canceled_at'),
   metadata: jsonb('metadata'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import {
   pgTable,
   text,
@@ -68,6 +69,7 @@ export const customField = pgTable('custom_field', {
   placeholder: text('placeholder'),
   showOnPortal: boolean('show_on_portal').default(false).notNull(),
   options: jsonb('options'), // JSON array of options for select types
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

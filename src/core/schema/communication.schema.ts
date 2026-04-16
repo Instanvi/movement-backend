@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import {
   pgTable,
   text,
@@ -22,6 +23,7 @@ export const announcement = pgTable('announcement', {
   churchId: uuid('church_id')
     .notNull()
     .references(() => church.id, { onDelete: 'cascade' }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -40,6 +42,7 @@ export const form = pgTable('form', {
   churchId: uuid('church_id')
     .notNull()
     .references(() => church.id, { onDelete: 'cascade' }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

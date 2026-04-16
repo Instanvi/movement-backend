@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -24,6 +25,7 @@ export const batch = pgTable('batch', {
   branchId: uuid('branch_id').references(() => branch.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

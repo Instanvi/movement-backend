@@ -67,7 +67,8 @@ export const member = pgTable(
     ageGroup: text('age_group'),
     isVisitor: boolean('is_visitor').default(false).notNull(),
     status: text('status').default('new').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdBy: uuid('created_by').references(() => user.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
     archivedAt: archiveAtColumn(),
   },
   (table) => {

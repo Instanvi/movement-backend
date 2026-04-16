@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid, decimal } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -23,6 +24,7 @@ export const branch = pgTable('branch', {
   phoneNumber: text('phone_number'),
   email: text('email'),
   website: text('website'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

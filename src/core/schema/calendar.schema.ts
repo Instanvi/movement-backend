@@ -40,6 +40,7 @@ export const room = pgTable('room', {
   branchId: uuid('branch_id').references(() => branch.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -54,6 +55,7 @@ export const resource = pgTable('resource', {
   branchId: uuid('branch_id').references(() => branch.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -71,6 +73,7 @@ export const appointmentType = pgTable('appointment_type', {
   branchId: uuid('branch_id').references(() => branch.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -98,6 +101,7 @@ export const appointmentBooking = pgTable('appointment_booking', {
   endTime: timestamp('end_time').notNull(),
   status: bookingStatusEnum('status').default('pending').notNull(),
   notes: text('notes'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -118,6 +122,7 @@ export const followUp = pgTable('follow_up', {
   churchId: uuid('church_id')
     .notNull()
     .references(() => church.id, { onDelete: 'cascade' }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -137,6 +142,7 @@ export const calendarEvent = pgTable('calendar_event', {
   branchId: uuid('branch_id').references(() => branch.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

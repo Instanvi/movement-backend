@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import {
   boolean,
   pgTable,
@@ -42,6 +43,7 @@ export const group = pgTable('group', {
   meetupSummary: text('meetup_summary'),
   iconUrl: text('icon_url'),
   criteria: jsonb('criteria'), // For future dynamic group logic
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

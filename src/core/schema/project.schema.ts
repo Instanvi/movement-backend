@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid, decimal } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -22,6 +23,7 @@ export const project = pgTable('project', {
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date'),
   status: text('status').default('active').notNull(), // 'active', 'completed', 'cancelled'
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

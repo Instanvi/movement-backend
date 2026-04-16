@@ -36,6 +36,7 @@ export const fund = pgTable('fund', {
     .default('0')
     .notNull(),
   isRestricted: boolean('is_restricted').default(false).notNull(),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -62,6 +63,7 @@ export const financialAccount = pgTable('financial_account', {
     .default('0')
     .notNull(),
   openingDate: timestamp('opening_date').defaultNow().notNull(),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -78,6 +80,7 @@ export const financialCategory = pgTable('financial_category', {
     .notNull()
     .references(() => church.id, { onDelete: 'cascade' }),
   parentId: uuid('parent_id'), // Self-reference for subcategories
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -92,6 +95,7 @@ export const payee = pgTable('payee', {
   email: text('email'),
   phoneNumber: text('phone_number'),
   address: text('address'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -109,6 +113,7 @@ export const pledgeCampaign = pgTable('pledge_campaign', {
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date'),
   status: text('status').default('active').notNull(),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -138,6 +143,7 @@ export const stewardshipPledge = pgTable('stewardship_pledge', {
   status: text('status').default('active').notNull(),
   startDate: timestamp('start_date').defaultNow().notNull(),
   endDate: timestamp('end_date'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });
@@ -161,6 +167,7 @@ export const transaction = pgTable('transaction', {
   fundId: uuid('fund_id').references(() => fund.id, {
     onDelete: 'set null',
   }),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

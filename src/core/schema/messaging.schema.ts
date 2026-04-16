@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -16,6 +17,7 @@ export const messaging = pgTable('messaging', {
     onDelete: 'cascade',
   }), // Optional: if null, it's for the whole organization
   targetAudience: text('target_audience').default('all').notNull(), // 'all', 'new_members', 'old_members', etc.
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   archivedAt: archiveAtColumn(),
 });

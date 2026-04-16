@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -15,6 +16,7 @@ export const family = pgTable('family', {
     onDelete: 'set null',
   }),
   headOfHouseId: uuid('head_of_house_id'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

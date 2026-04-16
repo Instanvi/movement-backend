@@ -1,3 +1,4 @@
+import { UserModule } from './modules/user/user.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { GroupModule } from './modules/group/group.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
@@ -31,6 +32,7 @@ import { RolesGuard } from './core/guards/roles.guard';
 
 @Module({
   imports: [
+    UserModule,
     BatchModule,
     FamilyModule,
     SubscriptionModule,

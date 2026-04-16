@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import {
   pgTable,
   text,
@@ -29,6 +30,7 @@ export const devotional = pgTable('devotional', {
   confession: text('confession'),
   furtherReading: text('further_reading'),
   readingPlan: text('reading_plan'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

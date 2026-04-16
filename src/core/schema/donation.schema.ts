@@ -59,6 +59,7 @@ export const donation = pgTable('donation', {
   isAnonymous: boolean('is_anonymous').default(false).notNull(),
   message: text('message'), // used for 'Comment'
   status: text('status').default('completed').notNull(), // 'pending', 'completed', 'failed'
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

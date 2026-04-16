@@ -1,3 +1,4 @@
+import { user } from './user.schema';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { archiveAtColumn } from './archive-columns';
@@ -17,6 +18,7 @@ export const church = pgTable('church', {
   slug: text('slug').notNull().unique(),
   logo: text('logo'),
   denomination: text('denomination'),
+  createdBy: uuid('created_by').references(() => user.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   metadata: text('metadata'),
   archivedAt: archiveAtColumn(),

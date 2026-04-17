@@ -20,7 +20,6 @@ import {
   UpdateMemberDto,
   MemberDto,
 } from './dto/member.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -38,7 +37,7 @@ import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/members')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'pastor', 'overseer')
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}

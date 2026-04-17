@@ -10,7 +10,6 @@ import {
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { DonationService } from './donation.service';
 import { CreateDonationDto, DonationDto } from './dto/donation.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -25,7 +24,7 @@ import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/donations')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class DonationController {
   constructor(private readonly donationService: DonationService) {}
 

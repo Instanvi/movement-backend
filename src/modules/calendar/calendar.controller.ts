@@ -15,7 +15,6 @@ import {
   ApiBaseResponse,
   ApiArrayResponse,
 } from '../../core/swagger/responses.decorator';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 
@@ -23,7 +22,7 @@ import { Roles } from '../../core/decorators/roles.decorator';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/calendar')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
 

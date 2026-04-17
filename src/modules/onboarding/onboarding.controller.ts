@@ -1,19 +1,15 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiBearerSession } from '../../core/swagger/auth-swagger.decorators';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { OnboardingService } from './onboarding.service';
 import { OnboardChurchDto, OnboardChurchResultDto } from './dto/onboarding.dto';
 import { ApiBaseResponse } from '../../core/swagger/responses.decorator';
-import {
-  ActiveUser,
-  ActiveUserEntity,
-} from '../../core/decorators/active-user.decorator';
+
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('onboarding')
 @ApiBearerSession()
 @Controller('onboarding')
-@UseGuards(AuthGuard)
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 
@@ -22,9 +18,13 @@ export class OnboardingController {
   @ApiBody({ type: OnboardChurchDto })
   @ApiBaseResponse(OnboardChurchResultDto)
   async onboardChurch(
-    @ActiveUser() user: ActiveUserEntity,
+    @Session() session: UserSession,
     @Body() body: OnboardChurchDto,
   ) {
-    return this.onboardingService.onboard(user.id, body.church, body.branch);
+    return this.onboardingService.onboard(
+      session.user.id,
+      body.church,
+      body.branch,
+    );
   }
 }

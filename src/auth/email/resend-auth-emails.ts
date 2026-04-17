@@ -13,7 +13,7 @@ const config = {
   getApiKey: () => process.env.RESEND_API_KEY?.trim(),
   getFromEmail: () =>
     process.env.RESEND_FROM_EMAIL?.trim() || 'Auth <onboarding@resend.dev>',
-  getReplyTo: () => process.env.RESEND_REPLY_TO?.trim() || null,
+  getReplyTo: () => process.env.RESEND_REPLY_TO_EMAIL?.trim() || null,
   getAppName: () => process.env.AUTH_EMAIL_APP_NAME?.trim() || 'auth-config',
   getFrontendUrl: () => process.env.FRONTEND_URL?.trim() || null,
   isProduction: () => process.env.NODE_ENV === 'production',
@@ -49,27 +49,25 @@ function getGreeting(user: User): string {
 }
 
 function transformUrl(originalUrl: string): string {
-  let urlObj: URL;
+  const frontendUrl = config.getFrontendUrl();
+  if (!frontendUrl) return originalUrl;
+
   try {
-    urlObj = new URL(originalUrl);
-  } catch {
+    const urlObj = new URL(originalUrl);
+    const frontend = new URL(frontendUrl);
+
+    // Better Auth encodes the verification/reset token in the auth route's
+    // query string. Preserve the original pathname so `/api/auth/...` keeps
+    // receiving the token exactly as Better Auth generated it.
+    urlObj.protocol = frontend.protocol;
+    urlObj.host = frontend.host;
+
+    // Note: urlObj.search (query params like ?token=...) is preserved automatically
+    return urlObj.toString();
+  } catch (err) {
+    log.error(`Failed to transform auth URL: ${originalUrl}`, err);
     return originalUrl;
   }
-
-  urlObj.pathname = urlObj.pathname.replace(/^\/api\/auth/, '');
-
-  const frontendUrl = config.getFrontendUrl();
-  if (frontendUrl) {
-    try {
-      const frontend = new URL(frontendUrl);
-      urlObj.protocol = frontend.protocol;
-      urlObj.host = frontend.host;
-    } catch {
-      // Ignore if frontendUrl is malformed
-    }
-  }
-
-  return urlObj.toString();
 }
 
 // ============================================================================

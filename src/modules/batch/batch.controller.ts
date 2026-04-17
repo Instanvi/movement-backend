@@ -7,6 +7,7 @@ import {
   Patch,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { BatchService } from './batch.service';
@@ -15,8 +16,6 @@ import {
   DepositBatchDto,
   UpdateBatchDto,
 } from './dto/batch.dto';
-import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -44,7 +43,7 @@ function parseBatchFilter(raw?: string): BatchListFilter {
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/batches')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'pastor')
 export class BatchController {
   constructor(private readonly batchService: BatchService) {}

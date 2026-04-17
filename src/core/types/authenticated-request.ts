@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-/** Populated by `@mguay/nestjs-better-auth` `AuthGuard` from `getSession().user`. */
+/** Populated by `@thallesp/nestjs-better-auth` `AuthGuard` from `getSession().user`. */
 export interface AuthUserPayload {
   id: string;
   email?: string;

@@ -5,7 +5,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ResponseInterceptor } from './core/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
 
   // Enable CORS with environment-based allowed origins
   const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(
@@ -106,9 +108,9 @@ async function bootstrap() {
   // Register global pipes, filters and interceptors
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       transform: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor());

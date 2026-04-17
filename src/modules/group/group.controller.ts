@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/c
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { CreateGroupDto, AddMemberToGroupDto, GroupDto, GroupMemberDto } from './dto/group.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -13,7 +12,7 @@ import { ApiBaseResponse, ApiArrayResponse } from '../../core/swagger/responses.
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/groups')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 

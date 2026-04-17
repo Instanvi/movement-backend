@@ -30,12 +30,36 @@ function resolveSecret(): string {
   return 'dev-only-secret-min-32-characters-long!!';
 }
 
+/**
+ * Hosts allowed for `callbackURL` / redirects (see origin checks on routes like `/verify-email`).
+ * Per Better Auth, include every origin you pass as `callbackURL` (e.g. your real frontend).
+ * @see https://better-auth.com/docs/concepts/email
+ */
 function parseTrustedOrigins(): string[] {
   const raw = process.env.BETTER_AUTH_TRUSTED_ORIGINS;
-  if (raw?.trim()) {
-    return raw.split(',').map((o) => o.trim());
-  }
-  return ['http://localhost:5550', 'http://localhost:3000'];
+  const origins = raw?.trim()
+    ? raw
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
+    : ['http://localhost:5550', 'http://localhost:3000'];
+
+  const merged = new Set(origins);
+
+  const addOrigin = (urlString: string | undefined) => {
+    if (!urlString?.trim()) return;
+    try {
+      const u = new URL(urlString.trim());
+      merged.add(`${u.protocol}//${u.host}`);
+    } catch {
+      /* ignore invalid URL */
+    }
+  };
+
+  addOrigin(process.env.BETTER_AUTH_URL);
+  addOrigin(process.env.FRONTEND_URL);
+
+  return [...merged];
 }
 
 function signupStringField(value: unknown): string {
@@ -44,7 +68,7 @@ function signupStringField(value: unknown): string {
 
 /**
  * Better Auth for Nest: email/password, verification, and password-reset routes.
- * HTTP handler is mounted at `/api/auth/*` by `@mguay/nestjs-better-auth` (keep `basePath` in sync).
+ * HTTP handler is mounted at `/api/auth/*` by `@thallesp/nestjs-better-auth` (keep `basePath` in sync).
  *
  * Sign-up body: `name` (Better Auth default), `email`, `password`, plus `firstName`, `lastName`,
  * `country` (see `betterAuthUserAdditionalFields`). `name` is set from first + last before insert.
@@ -100,16 +124,26 @@ export function createAppAuth(database: AppDatabase) {
         enabled: true,
         requireEmailVerification:
           process.env.AUTH_REQUIRE_EMAIL_VERIFICATION === 'true',
-        sendResetPassword: async ({ user, url }) => {
-          await sendPasswordResetEmailResend({ user, url });
-        },
+        // Docs: ({ user, url, token }, request). Return Promise<void> without awaiting Resend (fire-and-forget + log).
+        sendResetPassword: ({ user, url }) =>
+          Promise.resolve().then(() => {
+            void sendPasswordResetEmailResend({ user, url }).catch((err) => {
+              console.error('[BetterAuth] sendResetPassword email failed', err);
+            });
+          }),
       },
       emailVerification: {
-        sendVerificationEmail: async ({ user, url }) => {
-          await sendVerificationEmailResend({ user, url });
-        },
+        sendVerificationEmail: ({ user, url }) =>
+          Promise.resolve().then(() => {
+            void sendVerificationEmailResend({ user, url }).catch((err) => {
+              console.error('[BetterAuth] sendVerificationEmail failed', err);
+            });
+          }),
         sendOnSignUp: true,
-        sendOnSignIn: false,
+        // When `emailAndPassword.requireEmailVerification` is true, sign-in with a valid
+        // password but unverified email sends another verification email, then returns
+        // EMAIL_NOT_VERIFIED (see better-auth sign-in flow).
+        sendOnSignIn: process.env.AUTH_SEND_VERIFICATION_ON_SIGNIN !== 'false',
         autoSignInAfterVerification: true,
       },
       plugins: [openAPI()],
@@ -121,8 +155,5 @@ export function createAppAuth(database: AppDatabase) {
     }) as unknown as Auth;
   }
 
-  return {
-    auth: authSingleton,
-    options: { disableTrustedOriginsCors: true } as const,
-  };
+  return authSingleton;
 }

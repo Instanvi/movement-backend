@@ -21,7 +21,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from '@mguay/nestjs-better-auth';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { DbModule } from './core/db.module';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DB_CONNECTION } from './core/db.provider';
@@ -59,7 +59,15 @@ import { RolesGuard } from './core/guards/roles.guard';
     AuthModule.forRootAsync({
       imports: [DbModule],
       useFactory(database: NodePgDatabase<typeof appSchema>) {
-        return createAppAuth(database);
+        return {
+          auth: createAppAuth(database),
+          disableTrustedOriginsCors: true,
+          bodyParser: {
+            json: { limit: '2mb' },
+            urlencoded: { limit: '2mb', extended: true },
+            rawBody: true,
+          },
+        };
       },
       inject: [DB_CONNECTION],
     }),

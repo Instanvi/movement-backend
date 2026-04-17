@@ -6,6 +6,9 @@ services:
       - PORT=5550
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      # Origins allowed for email verification / OAuth callbackURL (comma-separated). FRONTEND_URL origin is auto-merged in code.
+      - BETTER_AUTH_TRUSTED_ORIGINS=${BETTER_AUTH_TRUSTED_ORIGINS}
+      - FRONTEND_URL=${FRONTEND_URL}
     ports:
       - "5550:5550"
     depends_on:

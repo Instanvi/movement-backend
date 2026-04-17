@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -32,7 +31,7 @@ import { BranchDto } from './dto/branch.dto';
 @ApiChurchRouteAuth()
 @ApiChurchIdParam()
 @Controller('churches/:churchId/branches')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class BranchController {
   constructor(private readonly branchService: BranchService) {}
 

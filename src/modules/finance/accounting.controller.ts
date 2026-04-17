@@ -17,7 +17,6 @@ import {
   AccountingOverviewDto,
 } from './dto/finance.dto';
 import { AccountingAccountFilter } from '../../domain/repositories/finance.repository';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -34,7 +33,7 @@ import {
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/finance/accounting')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'pastor')
 export class AccountingController {
   constructor(private readonly financeService: FinanceService) {}

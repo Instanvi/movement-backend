@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import {
-  AuthGuard,
+  AllowAnonymous,
+  OptionalAuth,
   Session,
   type UserSession,
-} from '@mguay/nestjs-better-auth';
+} from '@thallesp/nestjs-better-auth';
+import { ApiBearerSession } from 'src/core/swagger/auth-swagger.decorators';
 
 @ApiTags('users')
+@ApiBearerSession()
 @Controller('users')
-@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -45,5 +47,27 @@ export class UserController {
       memberId: mem.id,
       churchId: mem.churchId,
     };
+  }
+
+  @Get('public')
+  @AllowAnonymous()
+  @ApiOperation({
+    summary: 'Public users route (no session)',
+    description:
+      'Demonstrates `@AllowAnonymous()` with the global AuthGuard from `@thallesp/nestjs-better-auth`.',
+  })
+  publicRoute() {
+    return { message: 'This route is public' };
+  }
+
+  @Get('optional')
+  @OptionalAuth()
+  @ApiOperation({
+    summary: 'Optional auth (session may be absent)',
+    description:
+      'Demonstrates `@OptionalAuth()`; `session` is null when the client sends no credentials.',
+  })
+  optionalRoute(@Session() session: UserSession | null) {
+    return { authenticated: !!session, session };
   }
 }

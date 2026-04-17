@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -32,7 +31,7 @@ import { SubscriptionDto } from './dto/subscription.dto';
 @ApiChurchRouteAuth()
 @ApiChurchIdParam()
 @Controller('churches/:churchId/subscriptions')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'overseer')
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}

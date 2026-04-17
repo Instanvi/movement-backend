@@ -4,7 +4,6 @@ import { ReportService } from './report.service';
 import { ReportOverviewDto } from './dto/report.dto';
 import { ApiBaseResponse } from '../../core/swagger/responses.decorator';
 import { ApiBranchIdParam } from '../../core/swagger/path-params.decorators';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -13,7 +12,7 @@ import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/reports')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'overseer')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}

@@ -9,7 +9,6 @@ import {
   ApiBaseResponse,
   ApiArrayResponse,
 } from '../../core/swagger/responses.decorator';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -19,7 +18,7 @@ import { ApiBranchIdParam } from '../../core/swagger/path-params.decorators';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/announcements')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class AnnouncementController {
   constructor(private readonly commsService: CommunicationService) {}
 

@@ -16,7 +16,6 @@ import {
   UpdateDevotionalDto,
   DevotionalDto,
 } from './dto/devotional.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -34,7 +33,7 @@ import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/devotionals')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class DevotionalController {
   constructor(private readonly devotionalService: DevotionalService) {}
 

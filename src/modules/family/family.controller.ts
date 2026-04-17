@@ -18,7 +18,6 @@ import {
   AssignHeadOfHouseDto,
   FamilyDto,
 } from './dto/family.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
@@ -29,7 +28,7 @@ import { ApiBaseResponse, ApiArrayResponse } from '../../core/swagger/responses.
 @ApiChurchRouteAuth()
 @ApiBranchIdParam()
 @Controller('branches/:branchId/families')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles('admin', 'pastor', 'overseer')
 export class FamilyController {
   constructor(private readonly familyService: FamilyService) {}

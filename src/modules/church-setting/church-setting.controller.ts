@@ -21,7 +21,6 @@ import {
   ApiBaseResponse,
   ApiArrayResponse,
 } from '../../core/swagger/responses.decorator';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 
@@ -29,7 +28,7 @@ import { Roles } from '../../core/decorators/roles.decorator';
 @ApiChurchRouteAuth()
 @ApiChurchIdParam()
 @Controller('churches/:churchId/settings')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class ChurchSettingController {
   constructor(private readonly settingService: ChurchSettingService) {}
 

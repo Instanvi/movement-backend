@@ -13,7 +13,6 @@ import { ChurchDto } from './dto/church.dto';
 import { BranchDto } from '../branch/dto/branch.dto';
 import { ReportOverviewDto } from '../report/dto/report.dto';
 import { MessagingDto } from '../messaging/dto/messaging.dto';
-import { AuthGuard } from '@mguay/nestjs-better-auth';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 
@@ -21,7 +20,7 @@ import { Roles } from '../../core/decorators/roles.decorator';
 @ApiChurchRouteAuth()
 @ApiUuidPathParam('id', 'Church ID')
 @Controller('churches')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class ChurchController {
   constructor(private readonly churchService: ChurchService) {}
 

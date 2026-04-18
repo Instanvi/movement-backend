@@ -3,15 +3,14 @@ import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 /** Church identity only — addresses and site contact live on {@link CreateBranchDto}. */
 export class CreateChurchDto {
-  @ApiProperty({ example: 'First Baptist Church' })
+  @ApiProperty({
+    example: 'First Baptist Church',
+    description:
+      'Display name. A unique URL slug is generated on the server from this name.',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  @ApiProperty({ example: 'first-baptist', required: false })
-  @IsString()
-  @IsOptional()
-  slug?: string;
 
   @ApiProperty({
     required: false,

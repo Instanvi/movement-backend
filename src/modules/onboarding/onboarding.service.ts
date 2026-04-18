@@ -9,6 +9,7 @@ import { MemberRepository } from '../../domain/repositories/member.repository';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { CreateChurchDto } from '../church/dto/church.dto';
 import { CreateBranchDto } from '../branch/dto/branch.dto';
+import { uniqueSlug } from '../../core/utils/slug.utils';
 
 @Injectable()
 export class OnboardingService {
@@ -34,9 +35,14 @@ export class OnboardingService {
       );
     }
 
+    const slug = await uniqueSlug(churchData.name, async (candidate) => {
+      const row = await this.churchRepo.findBySlug(candidate);
+      return row != null;
+    });
+
     const church = await this.churchRepo.create({
       name: churchData.name,
-      slug: churchData.slug || churchData.name.toLowerCase().replace(/ /g, '-'),
+      slug,
       logo: churchData.logo,
       denomination: churchData.denomination,
       metadata: churchData.metadata,

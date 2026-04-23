@@ -22,6 +22,10 @@ export class ChurchService {
     return this.churchRepo.findOne(id);
   }
 
+  async updateChurch(id: string, data: Partial<{ name: string; logo: string; denomination: string; metadata: string }>) {
+    return this.churchRepo.update(id, data);
+  }
+
   async getBranches(
     churchId: string,
     pagination?: { limit?: number; offset?: number },

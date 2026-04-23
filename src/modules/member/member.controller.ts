@@ -113,6 +113,13 @@ export class MemberController {
     return await this.memberService.delete(memberId);
   }
 
+  @Patch(':memberId/restore')
+  @ApiUuidPathParam('memberId', 'Member ID')
+  @ApiOperation({ summary: 'Restore archived member' })
+  async restore(@Param('memberId') memberId: string) {
+    return await this.memberService.restore(memberId);
+  }
+
   @Get(':memberId')
   @ApiUuidPathParam('memberId', 'Member ID')
   @ApiOperation({ summary: 'Get member by ID' })

@@ -118,6 +118,11 @@ export class MemberService {
     return await this.memberRepo.delete(id);
   }
 
+  async restore(id: string) {
+    await this.findOne(id);
+    return await this.memberRepo.restore(id);
+  }
+
   async findOne(id: string) {
     const member = await this.memberRepo.findOne(id);
     if (!member) {

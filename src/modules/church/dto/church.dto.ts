@@ -34,6 +34,28 @@ export class CreateChurchDto {
   metadata?: string;
 }
 
+export class UpdateChurchDto {
+  @ApiPropertyOptional({ example: 'Grace Community Church' })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @ApiPropertyOptional({ description: 'Logo URL (public or CDN)' })
+  @IsString()
+  @IsOptional()
+  logo?: string;
+
+  @ApiPropertyOptional({ example: 'Baptist' })
+  @IsString()
+  @IsOptional()
+  denomination?: string;
+
+  @ApiPropertyOptional({ description: 'Free-form notes (JSON or text)' })
+  @IsString()
+  @IsOptional()
+  metadata?: string;
+}
+
 export class ChurchDto {
   @ApiProperty()
   id: string;

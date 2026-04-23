@@ -23,10 +23,37 @@ export class MemberRepository implements BaseRepository<typeof member> {
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findOne(id: string): Promise<MemberSelect | undefined> {
+  async findOne(id: string): Promise<any | undefined> {
     const [result] = await this.db
-      .select()
+      .select({
+        id: member.id,
+        churchId: member.churchId,
+        branchId: member.branchId,
+        userId: member.userId,
+        familyId: member.familyId,
+        role: member.role,
+        familyRole: member.familyRole,
+        gender: member.gender,
+        maritalStatus: member.maritalStatus,
+        birthDate: member.birthDate,
+        phoneNumber: member.phoneNumber,
+        ageGroup: member.ageGroup,
+        isVisitor: member.isVisitor,
+        status: member.status,
+        createdBy: member.createdBy,
+        createdAt: member.createdAt,
+        archivedAt: member.archivedAt,
+        user: {
+          id: schema.user.id,
+          name: schema.user.name,
+          firstName: schema.user.firstName,
+          lastName: schema.user.lastName,
+          email: schema.user.email,
+          image: schema.user.image,
+        },
+      })
       .from(member)
+      .leftJoin(schema.user, eq(member.userId, schema.user.id))
       .where(eq(member.id, id))
       .limit(1);
     return result;
@@ -35,8 +62,39 @@ export class MemberRepository implements BaseRepository<typeof member> {
   async findAll(
     where?: SQL,
     pagination?: { limit?: number; offset?: number },
-  ): Promise<{ items: MemberSelect[]; total: number }> {
-    const itemsQuery = this.db.select().from(member).$dynamic();
+  ): Promise<{ items: any[]; total: number }> {
+    const itemsQuery = this.db
+      .select({
+        id: member.id,
+        churchId: member.churchId,
+        branchId: member.branchId,
+        userId: member.userId,
+        familyId: member.familyId,
+        role: member.role,
+        familyRole: member.familyRole,
+        gender: member.gender,
+        maritalStatus: member.maritalStatus,
+        birthDate: member.birthDate,
+        phoneNumber: member.phoneNumber,
+        ageGroup: member.ageGroup,
+        isVisitor: member.isVisitor,
+        status: member.status,
+        createdBy: member.createdBy,
+        createdAt: member.createdAt,
+        archivedAt: member.archivedAt,
+        user: {
+          id: schema.user.id,
+          name: schema.user.name,
+          firstName: schema.user.firstName,
+          lastName: schema.user.lastName,
+          email: schema.user.email,
+          image: schema.user.image,
+        },
+      })
+      .from(member)
+      .leftJoin(schema.user, eq(member.userId, schema.user.id))
+      .$dynamic();
+    
     if (where) itemsQuery.where(where);
     if (pagination) {
       if (pagination.limit) itemsQuery.limit(pagination.limit);
@@ -49,7 +107,7 @@ export class MemberRepository implements BaseRepository<typeof member> {
       .from(member)
       .where(where ?? sql`true`);
 
-    return { items: items as MemberSelect[], total: countResult?.count ?? 0 };
+    return { items, total: countResult?.count ?? 0 };
   }
 
   async create(data: MemberInsert): Promise<MemberSelect> {
@@ -67,26 +125,45 @@ export class MemberRepository implements BaseRepository<typeof member> {
   }
 
   async delete(id: string): Promise<void> {
+    // Soft delete: set archivedAt timestamp instead of permanently deleting
+    await this.db
+      .update(member)
+      .set({ archivedAt: new Date() })
+      .where(eq(member.id, id));
+  }
+
+  async restore(id: string): Promise<MemberSelect> {
+    // Restore archived member by setting archivedAt to null
+    const [result] = await this.db
+      .update(member)
+      .set({ archivedAt: null })
+      .where(eq(member.id, id))
+      .returning();
+    return result;
+  }
+
+  async permanentlyDelete(id: string): Promise<void> {
+    // Hard delete: permanently remove from database (use with caution)
     await this.db.delete(member).where(eq(member.id, id));
   }
 
   async findByChurch(
     churchId: string,
     pagination?: { limit?: number; offset?: number },
-  ): Promise<{ items: MemberSelect[]; total: number }> {
+  ): Promise<{ items: any[]; total: number }> {
     return this.findAll(eq(member.churchId, churchId), pagination);
   }
 
   async findByBranch(
     branchId: string,
     pagination?: { limit?: number; offset?: number },
-  ): Promise<{ items: MemberSelect[]; total: number }> {
+  ): Promise<{ items: any[]; total: number }> {
     return this.findAll(eq(member.branchId, branchId), pagination);
   }
 
   async findByFamilyId(
     familyId: string,
-  ): Promise<{ items: MemberSelect[]; total: number }> {
+  ): Promise<{ items: any[]; total: number }> {
     return this.findAll(eq(member.familyId, familyId));
   }
 

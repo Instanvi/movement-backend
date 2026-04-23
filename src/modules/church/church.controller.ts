@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ApiChurchRouteAuth } from '../../core/swagger/auth-swagger.decorators';
 import { ApiUuidPathParam } from '../../core/swagger/path-params.decorators';
@@ -9,7 +9,7 @@ import {
 } from '../../core/swagger/responses.decorator';
 import { PaginationQueryDto } from '../../core/dto/pagination-query.dto';
 import { ChurchService } from './church.service';
-import { ChurchDto } from './dto/church.dto';
+import { ChurchDto, UpdateChurchDto } from './dto/church.dto';
 import { BranchDto } from '../branch/dto/branch.dto';
 import { ReportOverviewDto } from '../report/dto/report.dto';
 import { MessagingDto } from '../messaging/dto/messaging.dto';
@@ -29,6 +29,14 @@ export class ChurchController {
   @ApiBaseResponse(ChurchDto)
   async getChurch(@Param('id') id: string) {
     return this.churchService.getChurch(id);
+  }
+
+  @Patch(':id')
+  @Roles('admin')
+  @ApiOperation({ summary: 'Update church details' })
+  @ApiBaseResponse(ChurchDto)
+  async updateChurch(@Param('id') id: string, @Body() body: UpdateChurchDto) {
+    return this.churchService.updateChurch(id, body);
   }
 
   @Get(':id/branches')
